@@ -2,8 +2,12 @@ import type { Metadata } from 'next';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
+import { Toaster } from 'sonner';
 import '../styles/globals.css';
+import '@mantine/dates/styles.css';
+import '@mantine/charts/styles.css';
 import '@mantine/core/styles.css';
+import Footer from '@/components/footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -64,6 +68,8 @@ export default function RootLayout({
       <body className={`${inter.className} bg-zinc-950 dark h-full`}>
         <MantineProvider defaultColorScheme="dark">{children}</MantineProvider>
         <Analytics />
+        <Toaster />
+        <Footer />
       </body>
     </html>
   );

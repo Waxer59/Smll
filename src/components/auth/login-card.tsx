@@ -49,9 +49,11 @@ export const LoginCard = () => {
         <LoginAlternativeAnchor href="#">
           <Github /> Log in with GitHub
         </LoginAlternativeAnchor>
-        <LoginAlternativeAnchor href="/magic-link">
-          <Mail /> Magic link
-        </LoginAlternativeAnchor>
+        <Link href="/magic-link" passHref legacyBehavior>
+          <LoginAlternativeAnchor>
+            <Mail /> Magic link
+          </LoginAlternativeAnchor>
+        </Link>
       </div>
     </AuthCardLayout>
   );
