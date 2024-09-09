@@ -67,3 +67,29 @@
     @apply bg-background text-foreground;
   }
 }
+
+@supports selector(::-webkit-scrollbar) {
+  /* width */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #2e2c2c;
+    border-radius: 5px;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4b4848;
+  }
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-color: #2e2c2c transparent;
+    scrollbar-width: thin;
+  }
+}

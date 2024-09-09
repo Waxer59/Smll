@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Inter } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/react';
 import '../styles/globals.css';
+import '@mantine/core/styles.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -54,8 +57,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-zinc-950 dark`}>{children}</body>
+    <html lang="en" className="h-full">
+      <head>
+        <ColorSchemeScript />
+      </head>
+      <body className={`${inter.className} bg-zinc-950 dark h-full`}>
+        <MantineProvider defaultColorScheme="dark">{children}</MantineProvider>
+        <Analytics />
+      </body>
     </html>
   );
 }
