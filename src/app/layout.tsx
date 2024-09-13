@@ -13,7 +13,10 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://smll.app'),
-  title: 'Smll',
+  title: {
+    template: 'Smll | %s',
+    default: 'Smll'
+  },
   description:
     'Powerful, fast, and easy to use link shortener. Think big, link smll.',
   icons: {

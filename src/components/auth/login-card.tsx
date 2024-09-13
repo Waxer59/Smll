@@ -63,7 +63,7 @@ export const LoginCard = () => {
 
     account.createOAuth2Token(
       OAuthProvider.Github,
-      BASE_URL + '/api/oauth',
+      BASE_URL + '/api/create-session',
       BASE_URL
     );
   };

@@ -110,6 +110,25 @@ export const logoutUser = async () => {
   cookies().delete(Cookies.session);
 };
 
+export const loginWithMagicLink = async (
+  email: string
+): Promise<Models.Token | null> => {
+  const { account } = await createAdminClient();
+  let token = null;
+
+  try {
+    token = await account.createMagicURLToken(
+      ID.unique(),
+      email,
+      BASE_URL + '/api/create-session'
+    );
+  } catch (error) {
+    console.log(error);
+  }
+
+  return token;
+};
+
 export const resetPassword = async (email: string) => {
   const { account } = await createAdminClient();
 

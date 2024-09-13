@@ -7,6 +7,7 @@ import { z } from 'zod';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { loginWithMagicLink } from '@/lib/server/appwrite';
 
 const formSchema = z.object({
   email: z.string().email()
@@ -28,6 +29,19 @@ export const MagicLinkCard = () => {
       toast.error('Please enter a valid email address.');
       return;
     }
+
+    const { email } = data;
+    setEmail(email);
+
+    const token = await loginWithMagicLink(email);
+
+    if (!token) {
+      toast.error('Failed to send magic link.');
+      return;
+    }
+
+    setHasSubmitted(true);
+    toast.success('Magic link sent to your email address.');
   };
 
   return (
