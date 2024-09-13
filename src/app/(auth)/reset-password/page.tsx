@@ -1,3 +1,5 @@
+import { ResetPasswordCard } from '@/components/auth/reset-password-card';
+
 export default function Page() {
-  return <div>Reset Password INTERCEPTED</div>;
+  return <ResetPasswordCard />;
 }

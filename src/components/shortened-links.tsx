@@ -1,7 +1,7 @@
-import { LinkDetails } from '@/types';
-import { MultiSelect, Button } from '@mantine/core';
-import { Plus } from 'lucide-react';
+import { MultiSelect } from '@mantine/core';
 import { ShortenedLink } from './shortened-link';
+import { LinkDetails } from '@/types';
+import { CreateLink } from './create-link';
 
 interface Props {
   tags?: string[];
@@ -23,12 +23,7 @@ export const ShortenedLinks: React.FC<Props> = ({ tags, links }) => {
       </div>
       <ul className="flex gap-10 h-64">
         <li>
-          <Button radius="md" color="dark" className="h-full w-52">
-            <div className="flex flex-col items-center justify-center gap-6">
-              <Plus size={48} />
-              <h3 className="text-xl">Create new link</h3>
-            </div>
-          </Button>
+          <CreateLink />
         </li>
         <li>
           {links?.map((link) => (

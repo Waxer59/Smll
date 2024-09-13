@@ -108,7 +108,7 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
         )}
       </ul>
       <ul className="flex gap-1">
-        {tags?.map(({ id, name }) => (
+        {tags?.map(({ id, name }: { id: string; name: string }) => (
           <li key={id}>
             <Badge>{name}</Badge>
           </li>
