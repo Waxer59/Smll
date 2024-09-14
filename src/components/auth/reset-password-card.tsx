@@ -3,7 +3,7 @@
 import { AuthCardLayout } from '@/layouts/auth-card-layout';
 import { Button, Anchor, PasswordInput } from '@mantine/core';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { z } from 'zod';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -72,45 +72,47 @@ export const ResetPasswordCard = () => {
   };
 
   return (
-    <AuthCardLayout title="Reset Password">
-      <form
-        className="flex flex-col gap-8 text-lg mt-4"
-        onSubmit={handleSubmit}>
-        <PasswordInput
-          label="Password"
-          description="Must be at least 8 characters, not common, and unlike the last 5 passwords."
-          placeholder="********"
-          name="password"
-          size="md"
-          radius="md"
-          required
-          withAsterisk={false}
-        />
-        <PasswordInput
-          label="Repeat Password"
-          description="Must be at least 8 characters, not common, and unlike the last 5 passwords."
-          placeholder="********"
-          name="repeatPassword"
-          size="md"
-          radius="md"
-          required
-          withAsterisk={false}
-        />
-        <Button
-          type="submit"
-          variant="light"
-          color="gray"
-          radius="md"
-          disabled={isResetPasswordLoading}
-          loading={isResetPasswordLoading}>
-          Reset Password
-        </Button>
-      </form>
-      <Link href="/login" passHref legacyBehavior>
-        <Anchor variant="light" c="gray" className="mt-8">
-          Go back to login
-        </Anchor>
-      </Link>
-    </AuthCardLayout>
+    <Suspense>
+      <AuthCardLayout title="Reset Password">
+        <form
+          className="flex flex-col gap-8 text-lg mt-4"
+          onSubmit={handleSubmit}>
+          <PasswordInput
+            label="Password"
+            description="Must be at least 8 characters, not common, and unlike the last 5 passwords."
+            placeholder="********"
+            name="password"
+            size="md"
+            radius="md"
+            required
+            withAsterisk={false}
+          />
+          <PasswordInput
+            label="Repeat Password"
+            description="Must be at least 8 characters, not common, and unlike the last 5 passwords."
+            placeholder="********"
+            name="repeatPassword"
+            size="md"
+            radius="md"
+            required
+            withAsterisk={false}
+          />
+          <Button
+            type="submit"
+            variant="light"
+            color="gray"
+            radius="md"
+            disabled={isResetPasswordLoading}
+            loading={isResetPasswordLoading}>
+            Reset Password
+          </Button>
+        </form>
+        <Link href="/login" passHref legacyBehavior>
+          <Anchor variant="light" c="gray" className="mt-8">
+            Go back to login
+          </Anchor>
+        </Link>
+      </AuthCardLayout>
+    </Suspense>
   );
 };
