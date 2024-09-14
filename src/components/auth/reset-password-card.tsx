@@ -2,7 +2,7 @@
 
 import { AuthCardLayout } from '@/layouts/auth-card-layout';
 import { Button, Anchor, PasswordInput } from '@mantine/core';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import Link from 'next/link';
@@ -16,14 +16,14 @@ const formSchema = z.object({
 
 export const ResetPasswordCard = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isResetPasswordLoading, setIsResetPasswordLoading] = useState(false);
   const [secret, setSecret] = useState('');
   const [userId, setUserId] = useState('');
 
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const secret = url.searchParams.get('secret');
-    const userId = url.searchParams.get('userId');
+    const secret = searchParams.get('secret');
+    const userId = searchParams.get('userId');
 
     if (!secret || !userId) {
       router.push('/login');
@@ -32,7 +32,7 @@ export const ResetPasswordCard = () => {
 
     setSecret(secret);
     setUserId(userId);
-  }, []);
+  }, [router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
