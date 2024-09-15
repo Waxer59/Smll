@@ -8,7 +8,7 @@ export default function Footer() {
         href="https://github.com/Waxer59"
         target="_blank"
         aria-label="Github"
-        className="group/item">
+        className="hover:text-white transition-colors">
         <Github className="w-6 h-6" />
       </a>
     </footer>

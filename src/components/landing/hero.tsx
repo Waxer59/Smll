@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
-import AnimatedGridPattern from './magicui/animated-grid-pattern';
-import ShimmerLink from './magicui/shimmer-link';
+import AnimatedGridPattern from '../magicui/animated-grid-pattern';
+import ShimmerLink from '../magicui/shimmer-link';
 
 export default function Hero() {
   return (

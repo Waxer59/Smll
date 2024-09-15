@@ -23,14 +23,12 @@ export default function AuthLayout({
       }
     };
 
-    // Add the event listener
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
-      // Remove the event listener
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [router]);
+  }, []);
 
   return (
     <div

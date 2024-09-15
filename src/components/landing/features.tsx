@@ -1,5 +1,5 @@
 import { ChartColumn, Puzzle, SquarePen, Brain, Sparkles } from 'lucide-react';
-import { MagicCard } from './magicui/magic-card';
+import { MagicCard } from '../magicui/magic-card';
 
 const features = [
   {

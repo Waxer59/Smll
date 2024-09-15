@@ -21,18 +21,26 @@ export const LinksStats: React.FC<Props> = ({ activeLinks, inactiveLinks }) => {
       <ul className="flex gap-10">
         <li className="flex flex-col gap-4 items-center">
           <h3 className="text-xl">Active Links</h3>
-          <Card className="text-5xl text-center w-full" radius="md">
+          <Card
+            className="text-5xl text-center w-full"
+            radius="md"
+            shadow="sm"
+            withBorder>
             {activeLinks}
           </Card>
         </li>
         <li className="flex flex-col gap-4 items-center">
           <h3 className="text-xl">Inactive Links</h3>
-          <Card className="text-5xl text-center w-full" radius="md">
+          <Card
+            className="text-5xl text-center w-full"
+            radius="md"
+            shadow="sm"
+            withBorder>
             {inactiveLinks}
           </Card>
         </li>
       </ul>
-      <Card className="mt-10" radius="md">
+      <Card className="mt-10" radius="md" shadow="sm" withBorder>
         <BarChart
           h={300}
           data={data}

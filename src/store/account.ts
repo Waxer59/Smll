@@ -3,25 +3,29 @@ import { devtools } from 'zustand/middleware';
 
 interface State {
   name: string;
-  avatarUrl: string;
+  email: string;
+  isFirstTimeUser: boolean;
 }
 
 interface Actions {
   setName: (name: string) => void;
-  setAvatarUrl: (avatarUrl: string) => void;
+  setEmail: (email: string) => void;
+  setIsFirstTimeUser: (isFirstTimeUser: boolean) => void;
   clear(): void;
 }
 
 const initialState: State = {
   name: '',
-  avatarUrl: ''
+  email: '',
+  isFirstTimeUser: false
 };
 
 export const useAccountStore = create<State & Actions>()(
   devtools((set) => ({
     ...initialState,
     setName: (name) => set({ name }),
-    setAvatarUrl: (avatarUrl) => set({ avatarUrl }),
+    setEmail: (email) => set({ email }),
+    setIsFirstTimeUser: (isFirstTimeUser) => set({ isFirstTimeUser }),
     clear: () => set(initialState)
   }))
 );

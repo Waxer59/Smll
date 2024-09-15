@@ -1,8 +1,18 @@
 'use server';
 
-import { Client, Account, type Models, ID, Databases } from 'node-appwrite';
+import {
+  Client,
+  Account,
+  type Models,
+  ID,
+  Databases,
+  Avatars,
+  Users,
+  Query
+} from 'node-appwrite';
 import { cookies } from 'next/headers';
-import { APPWRITE_COLLECTIONS, APPWRITE_DATABASES, Cookies } from '@/constants';
+import { Cookies } from '@/constants';
+import { UserPrefs } from '@/types';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -28,6 +38,9 @@ export async function createSessionClient() {
   return {
     get account() {
       return new Account(client);
+    },
+    get avatar() {
+      return new Avatars(client);
     }
   };
 }
@@ -44,6 +57,9 @@ export async function createAdminClient() {
     },
     get database() {
       return new Databases(client);
+    },
+    get users() {
+      return new Users(client);
     }
   };
 }
@@ -59,6 +75,45 @@ export async function getLoggedInUser() {
 
   try {
     return await account.get();
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function getUserByEmail(
+  email: string
+): Promise<Models.UserList<Models.Preferences>> {
+  const { users } = await createAdminClient();
+  return await users.list([Query.equal('email', email)]);
+}
+
+export async function getUserById(
+  userId: string
+): Promise<Models.User<Models.Preferences>> {
+  const { users } = await createAdminClient();
+  return await users.get(userId);
+}
+
+export async function updateUserPrefs(
+  userId: string,
+  prefs: Record<string, any>
+): Promise<Models.User<Models.Preferences>> {
+  const { users } = await createAdminClient();
+  return await users.updatePrefs(userId, prefs);
+}
+
+export async function getCurrentSession(): Promise<Models.Session | null> {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return null;
+  }
+
+  const { account } = sessionClient;
+
+  try {
+    const session = await account.getSession('current');
+    return session;
   } catch (error) {
     return null;
   }
@@ -95,10 +150,12 @@ export async function registerUser(
   let user = null;
   const { account } = await createAdminClient();
 
+  const userId = ID.unique();
   const name = email.split('@')[0];
 
   try {
-    user = await account.create(ID.unique(), email, password, name);
+    user = await account.create(userId, email, password, name);
+    await updateUserPrefs(userId, { [UserPrefs.isFirstTimeUser]: true });
   } catch (error) {
     console.log(error);
   }
@@ -134,6 +191,38 @@ export const resetPassword = async (email: string) => {
 
   try {
     await account.createRecovery(email, BASE_URL + '/reset-password');
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateName = async (name: string) => {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return;
+  }
+
+  const { account } = sessionClient;
+
+  try {
+    await account.updateName(name);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateEmail = async (email: string, password: string) => {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return;
+  }
+
+  const { account } = sessionClient;
+
+  try {
+    await account.updateEmail(email, password);
   } catch (error) {
     console.log(error);
   }

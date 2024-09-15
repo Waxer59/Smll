@@ -69,7 +69,13 @@ export const MagicLinkCard = () => {
             required
             withAsterisk={false}
           />
-          <Button type="submit" variant="light" color="gray" radius="md">
+          <Button
+            type="submit"
+            variant="light"
+            color="gray"
+            radius="md"
+            loading={hasSubmitted}
+            disabled={hasSubmitted}>
             Send magic link
           </Button>
         </form>

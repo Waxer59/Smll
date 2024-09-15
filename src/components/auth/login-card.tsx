@@ -124,10 +124,10 @@ export const LoginCard = () => {
           disabled={isGithubLoginLoading}>
           Log in with GitHub
         </LoginAlternativeButton>
-        <Link href="/magic-link" passHref legacyBehavior>
-          <LoginAlternativeAnchor>
-            <Mail /> Magic link
-          </LoginAlternativeAnchor>
+        <Link
+          href="/magic-link"
+          className="flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 transition-colors p-3 rounded-md w-full font-semibold">
+          <Mail /> Magic link
         </Link>
       </div>
     </AuthCardLayout>

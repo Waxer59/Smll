@@ -17,3 +17,7 @@ export interface LinkDetails {
   tags?: TagDetails[];
   isEnabled: boolean;
 }
+
+export enum UserPrefs {
+  isFirstTimeUser = 'isFirstTimeUser'
+}
