@@ -1,8 +1,6 @@
 import { ShortenedLinks } from '@/components/dashboard/shortened-links';
 import { LinksStats } from '@/components/dashboard/links-stats';
 
-export const dynamic = 'force-dynamic';
-
 export default function Page() {
   return (
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
