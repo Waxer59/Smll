@@ -10,13 +10,61 @@ import {
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { Minus, Plus, MousePointerClick } from 'lucide-react';
+import { useState } from 'react';
+import { LinkDetails, SmartLinkDetails } from '../../types/index';
 
 interface Props {
   opened: boolean;
   onClose: () => void;
+  onSubmit: (link: LinkDetails) => void;
+  smartLinks?: SmartLinkDetails[];
 }
 
-export const NewLinkModal: React.FC<Props> = ({ opened, onClose }) => {
+export const NewLinkModal: React.FC<Props> = ({
+  opened,
+  smartLinks: smartLinksProp,
+  onClose
+}) => {
+  const [smartLinks, setSmartLinks] = useState<SmartLinkDetails[]>(
+    smartLinksProp ?? []
+  );
+  const isSmartPassword = smartLinks.length > 0;
+
+  const onChangeSmartLink = (
+    id: string,
+    editedFields: Partial<SmartLinkDetails>
+  ) => {
+    setSmartLinks(
+      smartLinks.map((link) => {
+        if (link.id === id) {
+          return {
+            ...link,
+            ...editedFields
+          };
+        }
+
+        return link;
+      })
+    );
+  };
+
+  const onCreateNewPasswordLink = () => {
+    const newId = crypto.randomUUID();
+
+    setSmartLinks([
+      ...smartLinks,
+      {
+        id: newId,
+        url: '',
+        password: ''
+      }
+    ]);
+  };
+
+  const removePasswordLink = (id: string) => {
+    setSmartLinks(smartLinks.filter((link) => link.id !== id));
+  };
+
   return (
     <Modal
       opened={opened}
@@ -25,40 +73,21 @@ export const NewLinkModal: React.FC<Props> = ({ opened, onClose }) => {
       title="Create new link"
       radius="md">
       <form className="flex flex-col gap-8 text-lg w-full">
-        <ul className="flex flex-col gap-4 w-full">
-          <li className="flex items-end gap-2 w-full">
-            <TextInput
-              type="url"
-              label="Link"
-              className="flex-1"
-              placeholder="https://verylonglink.com/abc123?is=verylong&really=long&iSaid=itwasReallyLong"
-              description="Link to be shortened"
-              size="md"
-              radius="md"
-              required
-            />
-            <PasswordInput
-              label="Password"
-              placeholder="Password"
-              className="flex-1"
-              description="Password to protect the link"
-              size="md"
-              radius="md"
-            />
-          </li>
-          <li className="flex items-end gap-2 w-full">
-            <div className="flex items-end gap-2 w-full">
+        <div className="flex flex-col gap-4 w-full">
+          <ul className="flex flex-col gap-4 w-full">
+            <li className="flex items-end gap-2 w-full">
               <TextInput
                 type="url"
                 label="Link"
+                className="flex-1"
                 placeholder="https://verylonglink.com/abc123?is=verylong&really=long&iSaid=itwasReallyLong"
                 description="Link to be shortened"
-                className="flex-1"
                 size="md"
                 radius="md"
                 required
               />
               <PasswordInput
+                required={isSmartPassword}
                 label="Password"
                 placeholder="Password"
                 className="flex-1"
@@ -66,26 +95,63 @@ export const NewLinkModal: React.FC<Props> = ({ opened, onClose }) => {
                 size="md"
                 radius="md"
               />
-            </div>
-            <Tooltip label="Remove link">
-              <ActionIcon size="xl" color="gray" radius="md" variant="light">
-                <Minus size={22} />
-              </ActionIcon>
-            </Tooltip>
-          </li>
-          <li>
-            <Tooltip label="Create smart password link">
-              <ActionIcon
-                variant="default"
-                color="gray"
-                radius="md"
-                size="lg"
-                className="w-full">
-                <Plus />
-              </ActionIcon>
-            </Tooltip>
-          </li>
-        </ul>
+            </li>
+            {smartLinks.map(({ id, url, password }) => (
+              <li className="flex items-end gap-2 w-full" key={id}>
+                <div className="flex items-end gap-2 w-full">
+                  <TextInput
+                    type="url"
+                    value={url}
+                    onChange={(e) =>
+                      onChangeSmartLink(id, { url: e.target.value })
+                    }
+                    label="Link"
+                    placeholder="https://verylonglink.com/abc123?is=verylong&really=long&iSaid=itwasReallyLong"
+                    description="Link to be shortened"
+                    className="flex-1"
+                    size="md"
+                    radius="md"
+                    required
+                  />
+                  <PasswordInput
+                    required
+                    value={password}
+                    onChange={(e) =>
+                      onChangeSmartLink(id, { password: e.target.value })
+                    }
+                    label="Password"
+                    placeholder="Password"
+                    className="flex-1"
+                    description="Password to protect the link"
+                    size="md"
+                    radius="md"
+                  />
+                </div>
+                <Tooltip label="Remove link">
+                  <ActionIcon
+                    onClick={() => removePasswordLink(id)}
+                    size="xl"
+                    color="gray"
+                    radius="md"
+                    variant="light">
+                    <Minus size={22} />
+                  </ActionIcon>
+                </Tooltip>
+              </li>
+            ))}
+          </ul>
+          <Tooltip label="Create smart password link">
+            <ActionIcon
+              onClick={onCreateNewPasswordLink}
+              variant="default"
+              color="gray"
+              radius="md"
+              size="lg"
+              className="w-full">
+              <Plus />
+            </ActionIcon>
+          </Tooltip>
+        </div>
         <div className="flex items-end gap-2">
           <TextInput
             label="Code"

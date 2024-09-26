@@ -28,8 +28,8 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
   const {
     originalLink,
     shortenedLink,
-    isProtectedByPassword,
-    isProtectedBySmartPassword,
+    password,
+    smartLinks,
     createdAt,
     clicks,
     activeFrom,
@@ -38,6 +38,8 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
     tags,
     isEnabled
   } = link;
+  const isSmartLink = smartLinks && smartLinks.length > 0;
+  const isProtectedByPassword = !isSmartLink && password;
 
   return (
     <Card radius="md" className="flex flex-col h-full gap-6">
@@ -48,7 +50,7 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
               <Lock size={16} />
             </Tooltip>
           )}
-          {isProtectedBySmartPassword && (
+          {isSmartLink && (
             <Tooltip label="Link is protected by smart password">
               <BrainCircuit size={16} />
             </Tooltip>

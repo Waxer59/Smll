@@ -26,6 +26,7 @@ export const CreateLink = () => {
       </Button>
       <NewLinkModal
         opened={isModalOpen}
+        onSubmit={() => {}}
         onClose={() => {
           setIsModalOpen(false);
         }}

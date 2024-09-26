@@ -7,8 +7,8 @@ export interface LinkDetails {
   id: string;
   originalLink: string;
   shortenedLink: string;
-  isProtectedByPassword: boolean;
-  isProtectedBySmartPassword: boolean;
+  password?: string;
+  smartLinks?: SmartLinkDetails[];
   createdAt: Date;
   clicks: number;
   activeFrom?: Date;
@@ -20,4 +20,10 @@ export interface LinkDetails {
 
 export enum UserPrefs {
   isFirstTimeUser = 'isFirstTimeUser'
+}
+
+export interface SmartLinkDetails {
+  id: string;
+  url: string;
+  password: string;
 }

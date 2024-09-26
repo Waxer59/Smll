@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <>
       <DashboardHeader />
       <div className="mt-16">{children}</div>
-      <FirstTimeUser />
+      {/* <FirstTimeUser /> */}
     </>
   );
 }
