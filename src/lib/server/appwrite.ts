@@ -11,7 +11,7 @@ import {
   Query
 } from 'node-appwrite';
 import { cookies } from 'next/headers';
-import { Cookies } from '@/constants';
+import { APPWRITE_COLLECTIONS, APPWRITE_DATABASES, Cookies } from '@/constants';
 import { UserPrefs } from '@/types';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
@@ -223,6 +223,31 @@ export const updateEmail = async (email: string, password: string) => {
 
   try {
     await account.updateEmail(email, password);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteAccount = async (userId: string) => {
+  const { users, database } = await createAdminClient();
+
+  try {
+    // Delete all created links
+    const links = await database.listDocuments(
+      APPWRITE_DATABASES.link_shortener,
+      APPWRITE_COLLECTIONS.links,
+      [Query.equal('creatorId', [userId])]
+    );
+
+    for (const link of links.documents) {
+      await database.deleteDocument(
+        APPWRITE_DATABASES.link_shortener,
+        APPWRITE_COLLECTIONS.links,
+        link.$id
+      );
+    }
+
+    await users.delete(userId);
   } catch (error) {
     console.log(error);
   }

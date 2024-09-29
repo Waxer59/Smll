@@ -47,7 +47,7 @@ export const DashboardHeader = () => {
 
   return (
     <header className="bg-neutral-800 py-4">
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div className="max-w-screen-xl w-[90%] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         <Link href="/dashboard">
           <h1 className="text-2xl font-medium text-white hover:text-white/80 transition-colors">
             Smll

@@ -4,10 +4,16 @@ import { resetPassword } from '@/lib/server/appwrite';
 import { useAccountStore } from '@/store/account';
 import { Button, Card, Tooltip } from '@mantine/core';
 import { CircleX, Info, Mail, Shield, UserMinus } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { DeleteAccountModal } from './delete-account-modal';
+import { CloseAllSessionsModal } from './close-all-sessions-modal';
 
 export const SecuritySettingsCard = () => {
   const email = useAccountStore((state) => state.email);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] =
+    useState(false);
+  const [isCloseAllSessionsOpen, setIsCloseAllSessionsOpen] = useState(false);
 
   const handleSendResetLink = async () => {
     await resetPassword(email);
@@ -27,7 +33,9 @@ export const SecuritySettingsCard = () => {
             <h3 className="text-base font-medium self-start">
               Multi-factor authentication
             </h3>
-            <Tooltip label="Enhance your account security with MFA">
+            <Tooltip
+              label="Enhance your account security with MFA"
+              color="gray">
               <Info size={16} />
             </Tooltip>
           </div>
@@ -60,7 +68,8 @@ export const SecuritySettingsCard = () => {
           radius="md"
           size="md"
           className="w-full"
-          leftSection={<UserMinus />}>
+          leftSection={<UserMinus />}
+          onClick={() => setIsCloseAllSessionsOpen(true)}>
           Close all sessions
         </Button>
         <Button
@@ -69,10 +78,19 @@ export const SecuritySettingsCard = () => {
           radius="md"
           size="md"
           className="w-full"
-          leftSection={<CircleX />}>
+          leftSection={<CircleX />}
+          onClick={() => setIsDeleteAccountModalOpen(true)}>
           Delete account
         </Button>
       </div>
+      <DeleteAccountModal
+        isOpen={isDeleteAccountModalOpen}
+        onClose={() => setIsDeleteAccountModalOpen(false)}
+      />
+      <CloseAllSessionsModal
+        isOpen={isCloseAllSessionsOpen}
+        onClose={() => setIsCloseAllSessionsOpen(false)}
+      />
     </Card>
   );
 };

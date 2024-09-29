@@ -12,6 +12,7 @@ import { DateTimePicker } from '@mantine/dates';
 import { Minus, Plus, MousePointerClick } from 'lucide-react';
 import { useState } from 'react';
 import { LinkDetails, SmartLinkDetails } from '../../types/index';
+import { LONG_LINK_EXAMPLE } from '@/constants';
 
 interface Props {
   opened: boolean;
@@ -80,7 +81,7 @@ export const NewLinkModal: React.FC<Props> = ({
                 type="url"
                 label="Link"
                 className="flex-1"
-                placeholder="https://verylonglink.com/abc123?is=verylong&really=long&iSaid=itwasReallyLong"
+                placeholder={LONG_LINK_EXAMPLE}
                 description="Link to be shortened"
                 size="md"
                 radius="md"
@@ -106,7 +107,7 @@ export const NewLinkModal: React.FC<Props> = ({
                       onChangeSmartLink(id, { url: e.target.value })
                     }
                     label="Link"
-                    placeholder="https://verylonglink.com/abc123?is=verylong&really=long&iSaid=itwasReallyLong"
+                    placeholder={LONG_LINK_EXAMPLE}
                     description="Link to be shortened"
                     className="flex-1"
                     size="md"
@@ -127,7 +128,7 @@ export const NewLinkModal: React.FC<Props> = ({
                     radius="md"
                   />
                 </div>
-                <Tooltip label="Remove link">
+                <Tooltip label="Remove link" color="gray">
                   <ActionIcon
                     onClick={() => removePasswordLink(id)}
                     size="xl"
@@ -140,7 +141,7 @@ export const NewLinkModal: React.FC<Props> = ({
               </li>
             ))}
           </ul>
-          <Tooltip label="Create smart password link">
+          <Tooltip label="Create smart password link" color="gray">
             <ActionIcon
               onClick={onCreateNewPasswordLink}
               variant="default"

@@ -71,7 +71,7 @@ export default function RootLayout({
       <body className={`${inter.className} bg-zinc-950 dark h-full`}>
         <MantineProvider defaultColorScheme="dark">{children}</MantineProvider>
         <Analytics />
-        <Toaster />
+        <Toaster invert />
         <Footer />
       </body>
     </html>

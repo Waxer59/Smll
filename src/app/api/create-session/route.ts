@@ -1,7 +1,9 @@
 import { Cookies } from '@/constants';
 import {
   createAdminClient,
+  createSessionClient,
   getUserById,
+  updateName,
   updateUserPrefs
 } from '@/lib/server/appwrite';
 import { UserPrefs } from '@/types';
@@ -26,20 +28,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(request.nextUrl.origin);
   }
 
-  // check if user is first time user
-  const { prefs } = await getUserById(userId);
-
-  // If the user doesn't have any preferences then its a first time user
-  if (Object.keys(prefs).length === 0) {
-    await updateUserPrefs(userId, { [UserPrefs.isFirstTimeUser]: true });
-  }
-
   cookies().set(Cookies.session, session.secret, {
     path: '/',
     httpOnly: true,
     sameSite: 'lax',
     secure: true
   });
+
+  // check if user is first time user
+  const { prefs, email } = await getUserById(userId);
+  const [name] = email.split('@');
+
+  // If the user doesn't have any preferences then its a first time user
+  if (Object.keys(prefs).length === 0) {
+    await updateUserPrefs(userId, { [UserPrefs.isFirstTimeUser]: true });
+    await updateName(name);
+  }
 
   return NextResponse.redirect(`${request.nextUrl.origin}/dashboard`);
 }

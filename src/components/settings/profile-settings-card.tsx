@@ -2,8 +2,16 @@
 
 import { updateName, updateEmail } from '@/lib/server/appwrite';
 import { useAccountStore } from '@/store/account';
-import { Card, Avatar, TextInput, PasswordInput, Button } from '@mantine/core';
-import { User, AtSign } from 'lucide-react';
+import {
+  Card,
+  Avatar,
+  TextInput,
+  PasswordInput,
+  Button,
+  Tooltip
+} from '@mantine/core';
+import { User, AtSign, Home } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -68,10 +76,17 @@ export const ProfileSettingsCard = () => {
 
   return (
     <Card
-      className="flex flex-col gap-4 items-center w-full"
+      className="flex flex-col gap-4 items-center w-full relative"
       radius="md"
       shadow="sm"
       withBorder>
+      <Tooltip label="Go back to dashboard" color="gray">
+        <Link
+          href="/dashboard"
+          className="absolute right-2 top-2 hover:bg-zinc-800 transition-colors p-3 rounded-md z-10">
+          <Home />
+        </Link>
+      </Tooltip>
       <h2 className="text-3xl font-bold">Profile</h2>
       <Avatar size="xl" name={name} />
       <form
@@ -79,7 +94,7 @@ export const ProfileSettingsCard = () => {
         onSubmit={handleChangeName}>
         <TextInput
           label="Name"
-          placeholder="Smll"
+          placeholder={name}
           type="text"
           autoComplete="name"
           name="name"
@@ -113,7 +128,6 @@ export const ProfileSettingsCard = () => {
           size="md"
           radius="md"
           required
-          withAsterisk={false}
         />
         <Button
           type="submit"

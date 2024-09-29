@@ -46,12 +46,12 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
       <header className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
           {isProtectedByPassword && (
-            <Tooltip label="Link is protected by password">
+            <Tooltip label="Link is protected by password" color="gray">
               <Lock size={16} />
             </Tooltip>
           )}
           {isSmartLink && (
-            <Tooltip label="Link is protected by smart password">
+            <Tooltip label="Link is protected by smart password" color="gray">
               <BrainCircuit size={16} />
             </Tooltip>
           )}
@@ -84,7 +84,9 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
       <ul className="flex flex-col gap-2">
         {activeFrom && (
           <li>
-            <Tooltip label="Link will be active from this date and time">
+            <Tooltip
+              label="Link will be active from this date and time"
+              color="gray">
               <Badge
                 color="gray"
                 variant="light"
@@ -97,7 +99,9 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
         )}
         {activeTo && (
           <li>
-            <Tooltip label="Link will expire from this date and time">
+            <Tooltip
+              label="Link will expire from this date and time"
+              color="gray">
               <Badge
                 color="gray"
                 variant="light"
