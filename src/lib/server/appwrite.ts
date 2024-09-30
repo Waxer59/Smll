@@ -13,6 +13,7 @@ import {
 import { cookies } from 'next/headers';
 import { APPWRITE_COLLECTIONS, APPWRITE_DATABASES, Cookies } from '@/constants';
 import { UserPrefs } from '@/types';
+import { account } from '@/lib/client/appwrite';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -228,26 +229,53 @@ export const updateEmail = async (email: string, password: string) => {
   }
 };
 
-export const deleteAccount = async (userId: string) => {
-  const { users, database } = await createAdminClient();
+export const deleteAccount = async () => {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return;
+  }
+
+  const { database, users } = await createAdminClient();
+
+  const { account } = sessionClient;
+
+  const user = await account.get();
+  const userId = user.$id;
 
   try {
     // Delete all created links
     const links = await database.listDocuments(
       APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.links,
+      APPWRITE_COLLECTIONS.shortened_links,
       [Query.equal('creatorId', [userId])]
     );
 
     for (const link of links.documents) {
       await database.deleteDocument(
         APPWRITE_DATABASES.link_shortener,
-        APPWRITE_COLLECTIONS.links,
+        APPWRITE_COLLECTIONS.shortened_links,
         link.$id
       );
     }
 
     await users.delete(userId);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const closeAllSessions = async () => {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return;
+  }
+
+  const { account } = sessionClient;
+
+  try {
+    await account.deleteSessions();
   } catch (error) {
     console.log(error);
   }

@@ -2,7 +2,6 @@
 
 import { Anchor, Button, PasswordInput, TextInput } from '@mantine/core';
 import { AtSign, Github, Mail, User } from 'lucide-react';
-import { LoginAlternativeAnchor } from './login-alternative-anchor';
 import { AuthCardLayout } from '@/layouts/auth-card-layout';
 import { z } from 'zod';
 import Link from 'next/link';
@@ -100,7 +99,7 @@ export const LoginCard = () => {
           color="gray"
           radius="md"
           loading={isLoginLoading}
-          disabled={isLoginLoading}>
+          disabled={isLoginLoading || isGithubLoginLoading}>
           Login
         </Button>
       </form>
