@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 const formSchema = z.object({
-  name: z.string().optional(),
+  name: z.string().max(128).optional(),
   email: z.string().email().optional(),
   password: z.string()
 });
@@ -25,6 +25,10 @@ const formSchema = z.object({
 export const ProfileSettingsCard = () => {
   const name = useAccountStore((state) => state.name);
   const email = useAccountStore((state) => state.email);
+  const isPasswordlessAccount = useAccountStore(
+    (state) => state.isPasswordlessAccount
+  );
+
   const [isUpdateLoading, setIsUpdateLoading] = useState(false);
   const [editedName, setEditedName] = useState(name);
   const [editedEmail, setEditedEmail] = useState(email);
@@ -44,11 +48,18 @@ export const ProfileSettingsCard = () => {
 
     setIsUpdateLoading(true);
 
+    const formElement = e.currentTarget as HTMLFormElement;
     const formData = new FormData(e.currentTarget);
+    let hasUpdatingErrors = false;
+
+    // Password is only required if the email is being updated
+    if (editedEmail !== email) {
+      formSchema.refine((data) => data.password);
+    }
 
     const { error, data } = formSchema.safeParse({
-      name: formData.get('name'),
-      email: formData.get('email'),
+      name: editedName,
+      email: editedEmail,
       password: formData.get('password')
     });
 
@@ -58,20 +69,36 @@ export const ProfileSettingsCard = () => {
       return;
     }
 
-    const { name, email, password } = data;
+    const { password } = data;
 
-    if (name) {
-      setName(name);
-      updateName(name);
+    if (editedName !== name) {
+      const newName = await updateName(editedName);
+
+      if (newName) {
+        setName(newName);
+      } else {
+        hasUpdatingErrors = true;
+        toast.error("Couldn't update name.");
+      }
     }
 
-    if (email) {
-      await updateEmail(email, password);
-      setEmail(email);
+    if (editedEmail !== email) {
+      const newEmail = await updateEmail(editedEmail, password);
+
+      if (newEmail) {
+        setEmail(newEmail);
+      } else {
+        hasUpdatingErrors = true;
+        toast.error("Couldn't update email.");
+      }
     }
 
     setIsUpdateLoading(false);
-    toast.success('Profile updated successfully.');
+
+    if (!hasUpdatingErrors) {
+      toast.success('Profile updated successfully.');
+      formElement.reset();
+    }
   };
 
   return (
@@ -106,29 +133,35 @@ export const ProfileSettingsCard = () => {
           value={editedName}
           onChange={(e) => setEditedName(e.currentTarget.value)}
         />
-        <TextInput
-          label="Email"
-          placeholder="shortlinks@smll.app"
-          type="email"
-          autoComplete="email"
-          name="email"
-          leftSection={<AtSign />}
-          value={editedEmail}
-          onChange={(e) => setEditedEmail(e.currentTarget.value)}
-          size="md"
-          radius="md"
-          required
-          withAsterisk={false}
-        />
-        <PasswordInput
-          label="Password"
-          placeholder="********"
-          description="Your current password"
-          name="password"
-          size="md"
-          radius="md"
-          required
-        />
+        {!isPasswordlessAccount && (
+          <>
+            <TextInput
+              label="Email"
+              placeholder={email}
+              type="email"
+              autoComplete="email"
+              name="email"
+              leftSection={<AtSign />}
+              value={editedEmail}
+              onChange={(e) => setEditedEmail(e.currentTarget.value)}
+              size="md"
+              radius="md"
+              required
+              withAsterisk={false}
+            />
+            {editedEmail !== email && (
+              <PasswordInput
+                label="Password"
+                placeholder="********"
+                description="Your current password"
+                name="password"
+                size="md"
+                radius="md"
+                required
+              />
+            )}
+          </>
+        )}
         <Button
           type="submit"
           variant="light"

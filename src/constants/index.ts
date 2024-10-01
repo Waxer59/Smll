@@ -1,6 +1,5 @@
 export const SHORT_ID_INITIAL_LENGTH = 5;
 export const SHORT_ID_MAX_LENGTH = 12;
-export const PROTECTED_PATHNAMES = ['/dashboard'];
 export const LONG_LINK_EXAMPLE =
   'https://verylonglink.com/abc123?is=verylong&really=long&iSaid=itwasReallyLong';
 export const PUBLIC_PATHNAMES = [
@@ -9,6 +8,8 @@ export const PUBLIC_PATHNAMES = [
   '/register',
   '/forgot-password'
 ];
+export const BROADCAST_CHANNEL_AUTH = 'smll-auth';
+export const BROADCAST_CHANNEL_VERIFICATION_MESSAGE = 'verified';
 export enum Cookies {
   session = 'session'
 }
@@ -19,4 +20,7 @@ export enum APPWRITE_COLLECTIONS {
   metrics = '66d1e85c00025d385e8b',
   shortened_links = '66d1c04a0003d4b43a6b',
   links = '66c65133002874f85e10'
+}
+export enum APPWRITE_PROVIDERS {
+  oauth2 = 'oauth2'
 }

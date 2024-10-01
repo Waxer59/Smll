@@ -1,12 +1,9 @@
 import { Cookies } from '@/constants';
 import {
   createAdminClient,
-  createSessionClient,
   getUserById,
-  updateName,
-  updateUserPrefs
+  updateName
 } from '@/lib/server/appwrite';
-import { UserPrefs } from '@/types';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -19,7 +16,6 @@ export async function GET(request: NextRequest) {
   }
 
   const { account } = await createAdminClient();
-
   let session = null;
 
   try {
@@ -35,14 +31,12 @@ export async function GET(request: NextRequest) {
     secure: true
   });
 
-  // check if user is first time user
-  const { prefs, email } = await getUserById(userId);
-  const [name] = email.split('@');
+  const { email, name } = await getUserById(userId);
+  const [emailName] = email.split('@');
 
-  // If the user doesn't have any preferences then its a first time user
-  if (Object.keys(prefs).length === 0) {
-    await updateUserPrefs(userId, { [UserPrefs.isFirstTimeUser]: true });
-    await updateName(name);
+  // If the user dont have a name, update it with the email
+  if (name.trim().length === 0) {
+    updateName(emailName);
   }
 
   return NextResponse.redirect(`${request.nextUrl.origin}/dashboard`);

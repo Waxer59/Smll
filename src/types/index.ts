@@ -18,10 +18,6 @@ export interface LinkDetails {
   isEnabled: boolean;
 }
 
-export enum UserPrefs {
-  isFirstTimeUser = 'isFirstTimeUser'
-}
-
 export interface SmartLinkDetails {
   id: string;
   url: string;

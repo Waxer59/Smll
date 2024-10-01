@@ -4,20 +4,23 @@ import { devtools } from 'zustand/middleware';
 interface State {
   name: string;
   email: string;
-  isFirstTimeUser: boolean;
+  hasEmailVerification: boolean;
+  isPasswordlessAccount: boolean;
 }
 
 interface Actions {
   setName: (name: string) => void;
   setEmail: (email: string) => void;
-  setIsFirstTimeUser: (isFirstTimeUser: boolean) => void;
+  setIsPasswordlessAccount: (isPasswordlessAccount: boolean) => void;
+  setHasEmailVerification: (hasEmailVerification: boolean) => void;
   clear(): void;
 }
 
 const initialState: State = {
   name: '',
   email: '',
-  isFirstTimeUser: false
+  isPasswordlessAccount: false,
+  hasEmailVerification: true
 };
 
 export const useAccountStore = create<State & Actions>()(
@@ -25,7 +28,10 @@ export const useAccountStore = create<State & Actions>()(
     ...initialState,
     setName: (name) => set({ name }),
     setEmail: (email) => set({ email }),
-    setIsFirstTimeUser: (isFirstTimeUser) => set({ isFirstTimeUser }),
+    setIsPasswordlessAccount: (isPasswordlessAccount) =>
+      set({ isPasswordlessAccount }),
+    setHasEmailVerification: (hasEmailVerification) =>
+      set({ hasEmailVerification }),
     clear: () => set(initialState)
   }))
 );

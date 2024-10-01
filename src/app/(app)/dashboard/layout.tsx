@@ -1,5 +1,6 @@
+import { EmailVerification } from '@/components/auth/email-verification';
+import { UserAuth } from '@/components/auth/user-auth';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { FirstTimeUser } from '@/components/dashboard/first-time-user';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -8,10 +9,10 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <UserAuth>
       <DashboardHeader />
       <div className="mt-16">{children}</div>
-      {/* <FirstTimeUser /> */}
-    </>
+      <EmailVerification />
+    </UserAuth>
   );
 }

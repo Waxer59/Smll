@@ -12,8 +12,6 @@ import {
 } from 'node-appwrite';
 import { cookies } from 'next/headers';
 import { APPWRITE_COLLECTIONS, APPWRITE_DATABASES, Cookies } from '@/constants';
-import { UserPrefs } from '@/types';
-import { account } from '@/lib/client/appwrite';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -23,18 +21,16 @@ const NEXT_PUBLIC_APPWRITE_PROJECT_ID =
 const NEXT_PUBLIC_APPWRITE_ENDPOINT =
   process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!;
 
-export async function createSessionClient() {
+export async function createSessionClient(token?: string) {
   const client = new Client()
     .setEndpoint(NEXT_PUBLIC_APPWRITE_ENDPOINT)
     .setProject(NEXT_PUBLIC_APPWRITE_PROJECT_ID);
 
-  const cookieSession = cookies().get(Cookies.session);
+  const cookieSession = token ?? cookies().get(Cookies.session)?.value;
 
-  if (!cookieSession || !cookieSession.value) {
-    return null;
+  if (cookieSession) {
+    client.setSession(cookieSession);
   }
-
-  client.setSession(cookieSession.value);
 
   return {
     get account() {
@@ -63,6 +59,22 @@ export async function createAdminClient() {
       return new Users(client);
     }
   };
+}
+
+export async function sendVerificationEmail() {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return null;
+  }
+
+  const { account } = sessionClient;
+
+  try {
+    await account.createVerification(BASE_URL + '/api/confirm-email');
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export async function getLoggedInUser() {
@@ -130,7 +142,6 @@ export async function loginUser(
   try {
     session = await account.createEmailPasswordSession(email, password);
 
-    // Set cookie
     cookies().set(Cookies.session, session.secret, {
       path: '/',
       httpOnly: true,
@@ -156,7 +167,6 @@ export async function registerUser(
 
   try {
     user = await account.create(userId, email, password, name);
-    await updateUserPrefs(userId, { [UserPrefs.isFirstTimeUser]: true });
   } catch (error) {
     console.log(error);
   }
@@ -164,13 +174,13 @@ export async function registerUser(
   return user;
 }
 
-export const logoutUser = async () => {
+export async function logoutUser() {
   cookies().delete(Cookies.session);
-};
+}
 
-export const loginWithMagicLink = async (
+export async function loginWithMagicLink(
   email: string
-): Promise<Models.Token | null> => {
+): Promise<Models.Token | null> {
   const { account } = await createAdminClient();
   let token = null;
 
@@ -185,9 +195,9 @@ export const loginWithMagicLink = async (
   }
 
   return token;
-};
+}
 
-export const resetPassword = async (email: string) => {
+export async function resetPassword(email: string) {
   const { account } = await createAdminClient();
 
   try {
@@ -195,26 +205,31 @@ export const resetPassword = async (email: string) => {
   } catch (error) {
     console.log(error);
   }
-};
+}
 
-export const updateName = async (name: string) => {
+export async function updateName(name: string): Promise<string | null> {
   const sessionClient = await createSessionClient();
+  let newName = null;
 
   if (!sessionClient) {
-    return;
+    return null;
   }
 
   const { account } = sessionClient;
 
   try {
     await account.updateName(name);
+    newName = name;
   } catch (error) {
     console.log(error);
   }
-};
 
-export const updateEmail = async (email: string, password: string) => {
+  return newName;
+}
+
+export async function updateEmail(email: string, password: string) {
   const sessionClient = await createSessionClient();
+  let newEmail = null;
 
   if (!sessionClient) {
     return;
@@ -224,12 +239,15 @@ export const updateEmail = async (email: string, password: string) => {
 
   try {
     await account.updateEmail(email, password);
+    newEmail = email;
   } catch (error) {
     console.log(error);
   }
-};
 
-export const deleteAccount = async () => {
+  return newEmail;
+}
+
+export async function deleteAccount() {
   const sessionClient = await createSessionClient();
 
   if (!sessionClient) {
@@ -263,9 +281,9 @@ export const deleteAccount = async () => {
   } catch (error) {
     console.log(error);
   }
-};
+}
 
-export const closeAllSessions = async () => {
+export async function closeAllSessions() {
   const sessionClient = await createSessionClient();
 
   if (!sessionClient) {
@@ -279,4 +297,21 @@ export const closeAllSessions = async () => {
   } catch (error) {
     console.log(error);
   }
-};
+}
+
+export async function getUserAccountSession(): Promise<Models.Session | null> {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return null;
+  }
+
+  const { account } = sessionClient;
+
+  try {
+    const session = await account.getSession('current');
+    return session;
+  } catch (error) {
+    return null;
+  }
+}
