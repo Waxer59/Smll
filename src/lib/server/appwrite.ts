@@ -71,7 +71,7 @@ export async function sendVerificationEmail() {
   const { account } = sessionClient;
 
   try {
-    await account.createVerification(BASE_URL + '/api/confirm-email');
+    await account.createVerification(BASE_URL + '/api/verify-email');
   } catch (error) {
     console.log(error);
   }
