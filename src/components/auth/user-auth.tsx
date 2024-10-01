@@ -69,5 +69,5 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
     };
   }, []);
 
-  return children;
+  return <>{children}</>;
 };
