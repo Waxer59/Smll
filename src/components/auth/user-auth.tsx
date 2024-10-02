@@ -8,7 +8,7 @@ import {
 import { getLoggedInUser, getUserAccountSession } from '@/lib/server/appwrite';
 import { useAccountStore } from '@/store/account';
 import router from 'next/router';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 interface Props {
   children: React.ReactNode;
@@ -41,7 +41,8 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
       setEmail(user.email);
       setHasEmailVerification(user.emailVerification);
       setIsPasswordlessAccount(
-        userAccountSession.provider === APPWRITE_PROVIDERS.oauth2
+        userAccountSession.provider === APPWRITE_PROVIDERS.oauth2 ||
+          userAccountSession.provider === APPWRITE_PROVIDERS.magicUrl
       );
     }
 
@@ -51,7 +52,6 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
 
     broadcastChannel.onmessage = (event) => {
       if (event.data === BROADCAST_CHANNEL_VERIFICATION_MESSAGE) {
-        console.log('VERIFIED');
         window.location.reload();
       }
     };

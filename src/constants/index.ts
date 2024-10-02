@@ -22,5 +22,6 @@ export enum APPWRITE_COLLECTIONS {
   links = '66c65133002874f85e10'
 }
 export enum APPWRITE_PROVIDERS {
-  oauth2 = 'oauth2'
+  oauth2 = 'oauth2',
+  magicUrl = 'magic-url'
 }
