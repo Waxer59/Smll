@@ -28,7 +28,7 @@ export default function AuthLayout({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [router]);
 
   return (
     <div

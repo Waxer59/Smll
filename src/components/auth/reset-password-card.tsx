@@ -32,7 +32,7 @@ export const ResetPasswordCard = () => {
 
     setSecret(secret);
     setUserId(userId);
-  }, []);
+  }, [router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

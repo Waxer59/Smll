@@ -31,7 +31,7 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
   useEffect(() => {
     const url = new URL(window.location.href);
     const hasVerifiedEmail = url.searchParams.get('verified') === 'true';
-
+    console.log('RENDER');
     async function initAccountStore() {
       const user = await getLoggedInUser();
       const userAccountSession = await getUserAccountSession();
@@ -74,7 +74,7 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
     return () => {
       broadcastChannel.close();
     };
-  }, []);
+  }, [setEmail, setHasEmailVerification, setIsPasswordlessAccount, setName]);
 
   return <>{children}</>;
 };
