@@ -1,6 +1,5 @@
 'use client';
 
-import { resetPassword } from '@/lib/server/appwrite';
 import { useAccountStore } from '@/store/account';
 import { Button, Card, Tooltip } from '@mantine/core';
 import { CircleX, Info, Mail, Shield, UserMinus } from 'lucide-react';
@@ -8,6 +7,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { DeleteAccountModal } from './delete-account-modal';
 import { CloseAllSessionsModal } from './close-all-sessions-modal';
+import { resetPassword } from '@/lib/server/appwrite-functions/auth';
 
 export const SecuritySettingsCard = () => {
   const email = useAccountStore((state) => state.email);

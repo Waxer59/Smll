@@ -1,11 +1,11 @@
 'use client';
 
-import { logoutUser } from '@/lib/server/appwrite';
 import { ActionIcon, Avatar, Menu, VisuallyHidden } from '@mantine/core';
 import { LogOut, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAccountStore } from '@/store/account';
+import { logoutUser } from '@/lib/server/appwrite-functions/auth';
 
 export const DashboardHeader = () => {
   const router = useRouter();

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getLoggedInUser } from './lib/server/appwrite';
 import { PUBLIC_PATHNAMES } from './constants';
+import { getLoggedInUser } from './lib/server/appwrite-functions/auth';
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;

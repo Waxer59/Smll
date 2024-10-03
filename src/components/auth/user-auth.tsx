@@ -5,11 +5,12 @@ import {
   BROADCAST_CHANNEL_AUTH,
   BROADCAST_CHANNEL_VERIFICATION_MESSAGE
 } from '@/constants';
+import { getUserShortenedLinks } from '@/lib/server/appwrite';
+import { getUserTokens } from '@/lib/server/appwrite-functions/account';
 import {
   getLoggedInUser,
-  getUserAccountSession,
-  getUserShortenedLinks
-} from '@/lib/server/appwrite';
+  getUserAccountSession
+} from '@/lib/server/appwrite-functions/auth';
 import { useAccountStore } from '@/store/account';
 import router from 'next/router';
 import React, { useEffect } from 'react';
@@ -27,17 +28,17 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
   const setIsPasswordlessAccount = useAccountStore(
     (state) => state.setIsPasswordlessAccount
   );
+  const setTokens = useAccountStore((state) => state.setTokens);
 
   useEffect(() => {
     const url = new URL(window.location.href);
     const hasVerifiedEmail = url.searchParams.get('verified') === 'true';
-    console.log('RENDER');
+
     async function initAccountStore() {
       const user = await getLoggedInUser();
       const userAccountSession = await getUserAccountSession();
       const accountLinks = await getUserShortenedLinks();
-
-      console.log(accountLinks);
+      const accountTokens = await getUserTokens();
 
       if (!user || !userAccountSession) {
         router.push('/');
@@ -47,6 +48,7 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
       setName(user.name);
       setEmail(user.email);
       setHasEmailVerification(user.emailVerification);
+      setTokens(accountTokens ?? []);
       setIsPasswordlessAccount(
         userAccountSession.provider === APPWRITE_PROVIDERS.oauth2 ||
           userAccountSession.provider === APPWRITE_PROVIDERS.magicUrl

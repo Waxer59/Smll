@@ -37,3 +37,8 @@ export interface SmartLinkDetails {
   url: string;
   password: string;
 }
+
+export interface TokenDetails {
+  id: string;
+  token: string;
+}

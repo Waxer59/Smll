@@ -1,7 +1,7 @@
 'use client';
 
+import { sendVerificationEmail } from '@/lib/server/appwrite-functions/auth';
 /* eslint-disable react/no-unescaped-entities */
-import { sendVerificationEmail } from '@/lib/server/appwrite';
 import { useAccountStore } from '@/store/account';
 import { Button, Modal } from '@mantine/core';
 import { Mail } from 'lucide-react';

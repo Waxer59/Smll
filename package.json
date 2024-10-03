@@ -24,6 +24,7 @@
     "cobe": "0.6.3",
     "dayjs": "1.11.13",
     "framer-motion": "11.5.4",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "0.438.0",
     "nanoid": "^5.0.7",
     "next": "14.2.5",
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "20",
     "@types/react": "^18.3.5",
     "@types/react-dom": "18",
@@ -56,10 +58,10 @@
     "typescript": "5"
   },
   "lint-staged": {
-    "apps/**/*.{ts,tsx,js,jsx}": [
+    "src/**/*.{ts,tsx,js,jsx}": [
       "eslint --fix"
     ],
-    "*.{ts,tsx,js,jsx,html,css,md}": [
+    "src/**/*.{ts,tsx,js,jsx,html,css,md}": [
       "prettier --write"
     ]
   }

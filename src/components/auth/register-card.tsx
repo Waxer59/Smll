@@ -5,10 +5,10 @@ import { Anchor, Button, PasswordInput, TextInput } from '@mantine/core';
 import { AtSign } from 'lucide-react';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { registerUser } from '@/lib/server/appwrite';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { registerUser } from '@/lib/server/appwrite-functions/auth';
 
 const formSchema = z.object({
   email: z.string().email(),

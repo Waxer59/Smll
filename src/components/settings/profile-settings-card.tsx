@@ -1,6 +1,9 @@
 'use client';
 
-import { updateName, updateEmail } from '@/lib/server/appwrite';
+import {
+  updateName,
+  updateEmail
+} from '@/lib/server/appwrite-functions/account';
 import { useAccountStore } from '@/store/account';
 import {
   Card,

@@ -1,17 +1,17 @@
 'use client';
 
 import { Anchor, Button, PasswordInput, TextInput } from '@mantine/core';
-import { AtSign, Github, Mail, User } from 'lucide-react';
+import { AtSign, Github, Mail } from 'lucide-react';
 import { AuthCardLayout } from '@/layouts/auth-card-layout';
 import { z } from 'zod';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { LoginAlternativeButton } from './login-alternative-button';
-import { loginUser } from '@/lib/server/appwrite';
 import { useState } from 'react';
 import { account } from '@/lib/client/appwrite';
 import { OAuthProvider } from 'appwrite';
 import { useRouter } from 'next/navigation';
+import { loginUser } from '@/lib/server/appwrite-functions/auth';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 

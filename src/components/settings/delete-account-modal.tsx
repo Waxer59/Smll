@@ -1,6 +1,9 @@
 'use client';
 
-import { deleteAccount, logoutUser } from '@/lib/server/appwrite';
+import {
+  deleteAccount,
+  logoutUser
+} from '@/lib/server/appwrite-functions/auth';
 import { Button, Modal } from '@mantine/core';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';

@@ -1,8 +1,11 @@
 'use client';
 
+import { deleteAccountToken } from '@/lib/server/appwrite-functions/account';
+import { useAccountStore } from '@/store/account';
 import { ActionIcon, Tooltip, VisuallyHidden } from '@mantine/core';
 import { Copy, Minus } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface Props {
   token: string;
@@ -10,6 +13,18 @@ interface Props {
 
 export const TokenItem: React.FC<Props> = ({ token }) => {
   const [isTokenHidden, setIsTokenHidden] = useState(true);
+  const removeToken = useAccountStore((state) => state.deleteToken);
+
+  const handleDeleteToken = async () => {
+    await deleteAccountToken(token);
+    removeToken(token);
+    toast.success('Token deleted successfully.');
+  };
+
+  const handleCopyToken = () => {
+    toast.success('Token copied to clipboard.');
+    navigator.clipboard.writeText(token);
+  };
 
   return (
     <li className="flex justify-between items-center w-full">
@@ -25,13 +40,23 @@ export const TokenItem: React.FC<Props> = ({ token }) => {
       </Tooltip>
       <div className="flex gap-2">
         <Tooltip label="Copy token" color="gray">
-          <ActionIcon variant="light" color="gray" radius="md" size="lg">
+          <ActionIcon
+            variant="light"
+            color="gray"
+            radius="md"
+            size="lg"
+            onClick={handleCopyToken}>
             <VisuallyHidden>Copy token</VisuallyHidden>
             <Copy />
           </ActionIcon>
         </Tooltip>
         <Tooltip label="Delete token" color="gray">
-          <ActionIcon variant="light" color="red" radius="md" size="lg">
+          <ActionIcon
+            variant="light"
+            color="red"
+            radius="md"
+            size="lg"
+            onClick={handleDeleteToken}>
             <VisuallyHidden>Delete token</VisuallyHidden>
             <Minus />
           </ActionIcon>

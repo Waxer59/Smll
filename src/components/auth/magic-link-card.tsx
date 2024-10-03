@@ -7,7 +7,7 @@ import { z } from 'zod';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { loginWithMagicLink } from '@/lib/server/appwrite';
+import { loginWithMagicLink } from '@/lib/server/appwrite-functions/auth';
 
 const formSchema = z.object({
   email: z.string().email()

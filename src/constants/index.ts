@@ -20,7 +20,8 @@ export enum APPWRITE_DATABASES {
 export enum APPWRITE_COLLECTIONS {
   metrics = '66d1e85c00025d385e8b',
   shortened_links = '66d1c04a0003d4b43a6b',
-  links = '66c65133002874f85e10'
+  links = '66c65133002874f85e10',
+  account_tokens = '66ff0e5f000684a671a2'
 }
 export enum APPWRITE_PROVIDERS {
   oauth2 = 'oauth2',

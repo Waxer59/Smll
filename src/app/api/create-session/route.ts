@@ -1,9 +1,9 @@
 import { Cookies } from '@/constants';
+import { createAdminClient } from '@/lib/server/appwrite';
 import {
-  createAdminClient,
   getUserById,
   updateName
-} from '@/lib/server/appwrite';
+} from '@/lib/server/appwrite-functions/account';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
