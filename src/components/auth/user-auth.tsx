@@ -5,7 +5,11 @@ import {
   BROADCAST_CHANNEL_AUTH,
   BROADCAST_CHANNEL_VERIFICATION_MESSAGE
 } from '@/constants';
-import { getLoggedInUser, getUserAccountSession } from '@/lib/server/appwrite';
+import {
+  getLoggedInUser,
+  getUserAccountSession,
+  getUserShortenedLinks
+} from '@/lib/server/appwrite';
 import { useAccountStore } from '@/store/account';
 import router from 'next/router';
 import React, { useEffect } from 'react';
@@ -31,6 +35,9 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
     async function initAccountStore() {
       const user = await getLoggedInUser();
       const userAccountSession = await getUserAccountSession();
+      const accountLinks = await getUserShortenedLinks();
+
+      console.log(accountLinks);
 
       if (!user || !userAccountSession) {
         router.push('/');

@@ -1,5 +1,6 @@
 export const SHORT_ID_INITIAL_LENGTH = 5;
 export const SHORT_ID_MAX_LENGTH = 12;
+export const SALT_ROUNDS = 10;
 export const LONG_LINK_EXAMPLE =
   'https://verylonglink.com/abc123?is=verylong&really=long&iSaid=itwasReallyLong';
 export const PUBLIC_PATHNAMES = [

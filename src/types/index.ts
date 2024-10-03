@@ -3,19 +3,33 @@ export interface TagDetails {
   name: string;
 }
 
-export interface LinkDetails {
+export interface SingleLinkDetails {
+  url: string;
+  password?: string;
+}
+
+export interface MetricsDetails {
+  createdAt: string;
+  views: number;
+  countries: string[];
+}
+
+export interface CreateLinkDetails {
+  links: SingleLinkDetails[];
+  deleteAt?: string;
+  activeAt?: string;
+  maxVisits?: number;
+  tags?: string[];
+}
+
+export interface LinkDetails extends CreateLinkDetails {
   id: string;
+  code: string;
+  isEnabled: boolean;
   originalLink: string;
   shortenedLink: string;
-  password?: string;
-  smartLinks?: SmartLinkDetails[];
-  createdAt: Date;
   clicks: number;
-  activeFrom?: Date;
-  activeTo?: Date;
-  maxClicks?: number;
-  tags?: TagDetails[];
-  isEnabled: boolean;
+  metrics: MetricsDetails[];
 }
 
 export interface SmartLinkDetails {
