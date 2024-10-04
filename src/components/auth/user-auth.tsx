@@ -12,7 +12,7 @@ import {
   getUserAccountSession
 } from '@/lib/server/appwrite-functions/auth';
 import { useAccountStore } from '@/store/account';
-import router from 'next/router';
+import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 
 interface Props {
@@ -29,6 +29,7 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
     (state) => state.setIsPasswordlessAccount
   );
   const setTokens = useAccountStore((state) => state.setTokens);
+  const router = useRouter();
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -36,6 +37,12 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
 
     async function initAccountStore() {
       const user = await getLoggedInUser();
+
+      if (user === 'MFA') {
+        router.push('/login?mfa=true');
+        return;
+      }
+
       const userAccountSession = await getUserAccountSession();
       const accountLinks = await getUserShortenedLinks();
       const accountTokens = await getUserTokens();

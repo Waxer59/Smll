@@ -42,3 +42,5 @@ export interface TokenDetails {
   id: string;
   token: string;
 }
+
+export type RequireMFA = 'MFA';

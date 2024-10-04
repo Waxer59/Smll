@@ -26,6 +26,7 @@ export const CloseAllSessionsModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   return (
     <Modal
+      radius="md"
       title="Delete Account"
       opened={isOpen || isLoading}
       onClose={onClose}>

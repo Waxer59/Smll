@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   try {
     session = await account.createSession(userId, secret);
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.redirect(request.nextUrl.origin);
   }
 

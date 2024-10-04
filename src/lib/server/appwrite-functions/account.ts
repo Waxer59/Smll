@@ -78,6 +78,7 @@ export async function getUserTokens(): Promise<TokenDetails[] | null> {
   }
 
   const { account, database } = sessionClient;
+
   const user = await account.get();
   let tokens = null;
 

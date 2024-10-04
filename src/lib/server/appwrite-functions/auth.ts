@@ -2,8 +2,9 @@
 
 import { Cookies, APPWRITE_DATABASES, APPWRITE_COLLECTIONS } from '@/constants';
 import { cookies } from 'next/headers';
-import { Models, Query, ID } from 'node-appwrite';
+import { Models, Query, ID, AuthenticationFactor } from 'node-appwrite';
 import { createSessionClient, createAdminClient } from '../appwrite';
+import { RequireMFA } from '@/types';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -23,7 +24,9 @@ export async function sendVerificationEmail() {
   }
 }
 
-export async function getLoggedInUser() {
+export async function getLoggedInUser(): Promise<
+  Promise<Models.User<Models.Preferences>> | RequireMFA | null
+> {
   const sessionClient = await createSessionClient();
 
   if (!sessionClient) {
@@ -34,7 +37,11 @@ export async function getLoggedInUser() {
 
   try {
     return await account.get();
-  } catch (error) {
+  } catch (error: any) {
+    if (error.type === 'user_more_factors_required') {
+      return 'MFA';
+    }
+
     return null;
   }
 }
@@ -72,11 +79,34 @@ export async function loginUser(
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'production'
     });
+  } catch (error: any) {
+    console.log(error);
+    return null;
+  }
+
+  return session;
+}
+
+export async function createMFAChallenge(): Promise<string | null> {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return null;
+  }
+
+  const { account } = sessionClient;
+  let challengeId = null;
+
+  try {
+    const challenge = await account.createMfaChallenge(
+      AuthenticationFactor.Email
+    );
+    challengeId = challenge.$id;
   } catch (error) {
     console.log(error);
   }
 
-  return session;
+  return challengeId;
 }
 
 export async function registerUser(
@@ -121,7 +151,23 @@ export async function loginWithMagicLink(
   return token;
 }
 
-export async function updateAccountMFA(activated = true) {
+export async function disableAccountMFA() {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return;
+  }
+
+  const { account } = sessionClient;
+
+  try {
+    await account.updateMFA(false);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function enableAccountMFA(): Promise<string[] | null> {
   const sessionClient = await createSessionClient();
 
   if (!sessionClient) {
@@ -129,12 +175,16 @@ export async function updateAccountMFA(activated = true) {
   }
 
   const { account } = sessionClient;
+  const recoveryCodes = await account.createMfaRecoveryCodes();
 
   try {
-    await account.updateMFA(activated);
+    await account.updateMFA(true);
   } catch (error) {
     console.log(error);
+    return null;
   }
+
+  return recoveryCodes.recoveryCodes;
 }
 
 export async function resetPassword(email: string) {
@@ -214,4 +264,26 @@ export async function getUserAccountSession(): Promise<Models.Session | null> {
   } catch (error) {
     return null;
   }
+}
+
+export async function verifyMFA(
+  challengeId: string,
+  code: string
+): Promise<boolean> {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return false;
+  }
+
+  const { account } = sessionClient;
+
+  try {
+    await account.updateMfaChallenge(challengeId, code);
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+
+  return true;
 }

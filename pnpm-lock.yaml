@@ -30,7 +30,7 @@ dependencies:
     specifier: 15.0.0
     version: 15.0.0
   bcrypt:
-    specifier: ^5.1.1
+    specifier: 5.1.1
     version: 5.1.1
   class-variance-authority:
     specifier: 0.7.0
@@ -48,13 +48,13 @@ dependencies:
     specifier: 11.5.4
     version: 11.5.4(react-dom@18.3.1)(react@18.3.1)
   jsonwebtoken:
-    specifier: ^9.0.2
+    specifier: 9.0.2
     version: 9.0.2
   lucide-react:
     specifier: 0.438.0
     version: 0.438.0(react@18.3.1)
   nanoid:
-    specifier: ^5.0.7
+    specifier: 5.0.7
     version: 5.0.7
   next:
     specifier: 14.2.5
@@ -95,16 +95,16 @@ dependencies:
 
 devDependencies:
   '@types/bcrypt':
-    specifier: ^5.0.2
+    specifier: 5.0.2
     version: 5.0.2
   '@types/jsonwebtoken':
-    specifier: ^9.0.7
+    specifier: 9.0.7
     version: 9.0.7
   '@types/node':
     specifier: '20'
     version: 20.0.0
   '@types/react':
-    specifier: ^18.3.5
+    specifier: 18.3.5
     version: 18.3.5
   '@types/react-dom':
     specifier: '18'

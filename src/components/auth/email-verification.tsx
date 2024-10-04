@@ -19,6 +19,7 @@ export const EmailVerification = () => {
 
   return (
     <Modal
+      radius="md"
       opened={!hasEmailVerification}
       onClose={() => {}}
       withCloseButton={false}>

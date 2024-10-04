@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect to dashboard if the user is logged in
   if (PUBLIC_PATHNAMES.includes(basePathname)) {
-    if (user) {
+    if (user && user !== 'MFA') {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }

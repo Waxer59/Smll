@@ -16,9 +16,9 @@ export const TokenItem: React.FC<Props> = ({ token }) => {
   const removeToken = useAccountStore((state) => state.deleteToken);
 
   const handleDeleteToken = async () => {
-    await deleteAccountToken(token);
     removeToken(token);
     toast.success('Token deleted successfully.');
+    await deleteAccountToken(token);
   };
 
   const handleCopyToken = () => {
