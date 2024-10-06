@@ -43,19 +43,21 @@ async function createUniqueLinkCode(length = SHORT_ID_INITIAL_LENGTH) {
   }
 }
 
-export async function createShortenedLink(
+async function createShortenedLink(
   link: CreateLinkDetails,
   userId?: string
 ): Promise<string | null> {
   if (!userId) {
     const user = await getLoggedInUser();
 
-    if (!user) {
+    if (!user || user === 'MFA') {
       return null;
     }
 
     userId = user.$id;
   }
+
+  // TODO: Check if one link have password, if so, all links must have password
 
   const areAllPasswordsUnique = areAllLinksPasswordsUnique(link.links);
 

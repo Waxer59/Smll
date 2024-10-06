@@ -28,6 +28,7 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
   const setIsPasswordlessAccount = useAccountStore(
     (state) => state.setIsPasswordlessAccount
   );
+  const setHasMFA = useAccountStore((state) => state.setHasMFA);
   const setTokens = useAccountStore((state) => state.setTokens);
   const router = useRouter();
 
@@ -53,6 +54,7 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
       }
 
       setName(user.name);
+      setHasMFA(user.mfa);
       setEmail(user.email);
       setHasEmailVerification(user.emailVerification);
       setTokens(accountTokens ?? []);
@@ -83,7 +85,13 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
     return () => {
       broadcastChannel.close();
     };
-  }, [setEmail, setHasEmailVerification, setIsPasswordlessAccount, setName]);
+  }, [
+    setEmail,
+    setHasEmailVerification,
+    setIsPasswordlessAccount,
+    setName,
+    setHasMFA
+  ]);
 
   return <>{children}</>;
 };
