@@ -68,7 +68,7 @@ export async function getUserShortenedLinks(
   if (!userId) {
     const user = await getLoggedInUser();
 
-    if (!user) {
+    if (!user || user === 'MFA') {
       return null;
     }
 

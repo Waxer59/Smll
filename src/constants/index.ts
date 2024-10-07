@@ -9,8 +9,14 @@ export const PUBLIC_PATHNAMES = [
   '/register',
   '/forgot-password'
 ];
-export const BROADCAST_CHANNEL_AUTH = 'smll-auth';
-export const BROADCAST_CHANNEL_VERIFICATION_MESSAGE = 'verified';
+export enum BROADCAST_CHANNEL {
+  auth = 'auth',
+  logout = 'logout'
+}
+export enum BROADCAST_CHANNEL_MESSAGE {
+  login = 'login',
+  logout = 'logout'
+}
 export enum Cookies {
   session = 'session'
 }

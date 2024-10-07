@@ -16,10 +16,10 @@ export interface MetricsDetails {
 
 export interface CreateLinkDetails {
   links: SingleLinkDetails[];
-  deleteAt?: string;
-  activeAt?: string;
+  deleteAt?: Date;
+  activeAt?: Date;
   maxVisits?: number;
-  tags?: string[];
+  tags?: TagDetails[];
 }
 
 export interface LinkDetails extends CreateLinkDetails {
@@ -30,6 +30,9 @@ export interface LinkDetails extends CreateLinkDetails {
   shortenedLink: string;
   clicks: number;
   metrics: MetricsDetails[];
+  createdAt: Date;
+  isSmartLink: boolean;
+  isProtectedByPassword: boolean;
 }
 
 export interface SmartLinkDetails {

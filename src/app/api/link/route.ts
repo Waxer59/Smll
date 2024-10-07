@@ -17,7 +17,9 @@ import { areAllLinksPasswordsUnique } from '@/helpers/areAllLinksPasswordsUnique
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
-async function createUniqueLinkCode(length = SHORT_ID_INITIAL_LENGTH) {
+async function createUniqueLinkCode(
+  length = SHORT_ID_INITIAL_LENGTH
+): Promise<string | null> {
   const { database } = await createAdminClient();
 
   if (length > SHORT_ID_MAX_LENGTH) {
@@ -43,14 +45,14 @@ async function createUniqueLinkCode(length = SHORT_ID_INITIAL_LENGTH) {
   }
 }
 
-export async function createShortenedLink(
+async function createShortenedLink(
   link: CreateLinkDetails,
   userId?: string
 ): Promise<string | null> {
   if (!userId) {
     const user = await getLoggedInUser();
 
-    if (!user) {
+    if (!user || user === 'MFA') {
       return null;
     }
 
