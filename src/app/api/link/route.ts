@@ -17,7 +17,9 @@ import { areAllLinksPasswordsUnique } from '@/helpers/areAllLinksPasswordsUnique
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
-async function createUniqueLinkCode(length = SHORT_ID_INITIAL_LENGTH) {
+async function createUniqueLinkCode(
+  length = SHORT_ID_INITIAL_LENGTH
+): Promise<string | null> {
   const { database } = await createAdminClient();
 
   if (length > SHORT_ID_MAX_LENGTH) {

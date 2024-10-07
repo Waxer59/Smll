@@ -28,18 +28,16 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
   const {
     originalLink,
     shortenedLink,
-    password,
-    smartLinks,
     createdAt,
+    deleteAt,
+    activeAt,
+    maxVisits,
     clicks,
-    activeFrom,
-    activeTo,
-    maxClicks,
     tags,
-    isEnabled
+    isEnabled,
+    isProtectedByPassword,
+    isSmartLink
   } = link;
-  const isSmartLink = smartLinks && smartLinks.length > 0;
-  const isProtectedByPassword = !isSmartLink && password;
 
   return (
     <Card radius="md" className="flex flex-col h-full gap-6">
@@ -77,12 +75,12 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
         <li className="flex items-center gap-2">
           <MousePointerClick size={16} />
           <span>
-            Clicks: {clicks} {maxClicks ? `/ ${maxClicks}` : ''}
+            Clicks: {clicks} {maxVisits ? `/ ${maxVisits}` : ''}
           </span>
         </li>
       </ul>
       <ul className="flex flex-col gap-2">
-        {activeFrom && (
+        {activeAt && (
           <li>
             <Tooltip
               label="Link will be active from this date and time"
@@ -92,12 +90,12 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
                 variant="light"
                 size="lg"
                 className="capitalize">
-                Begins: {activeFrom.toLocaleDateString('en-US')}
+                Begins: {activeAt.toLocaleDateString('en-US')}
               </Badge>
             </Tooltip>
           </li>
         )}
-        {activeTo && (
+        {deleteAt && (
           <li>
             <Tooltip
               label="Link will expire from this date and time"
@@ -107,14 +105,14 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
                 variant="light"
                 size="lg"
                 className="capitalize">
-                Expires: {activeTo.toLocaleDateString('en-US')}
+                Expires: {deleteAt.toLocaleDateString('en-US')}
               </Badge>
             </Tooltip>
           </li>
         )}
       </ul>
       <ul className="flex gap-1">
-        {tags?.map(({ id, name }: { id: string; name: string }) => (
+        {tags?.map(({ id, name }) => (
           <li key={id}>
             <Badge>{name}</Badge>
           </li>

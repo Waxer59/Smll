@@ -2,8 +2,8 @@
 
 import {
   APPWRITE_PROVIDERS,
-  BROADCAST_CHANNEL_AUTH,
-  BROADCAST_CHANNEL_VERIFICATION_MESSAGE
+  BROADCAST_CHANNEL,
+  BROADCAST_CHANNEL_MESSAGE
 } from '@/constants';
 import { getUserShortenedLinks } from '@/lib/server/appwrite';
 import { getUserTokens } from '@/lib/server/appwrite-functions/account';
@@ -66,16 +66,16 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
 
     initAccountStore();
 
-    const broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_AUTH);
+    const broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL.auth);
 
     broadcastChannel.onmessage = (event) => {
-      if (event.data === BROADCAST_CHANNEL_VERIFICATION_MESSAGE) {
+      if (event.data === BROADCAST_CHANNEL_MESSAGE.login) {
         window.location.reload();
       }
     };
 
     if (hasVerifiedEmail) {
-      broadcastChannel.postMessage(BROADCAST_CHANNEL_VERIFICATION_MESSAGE);
+      broadcastChannel.postMessage(BROADCAST_CHANNEL_MESSAGE.login);
 
       // Remove the query param
       url.searchParams.delete('verified');
@@ -86,10 +86,12 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
       broadcastChannel.close();
     };
   }, [
+    router,
     setEmail,
     setHasEmailVerification,
     setIsPasswordlessAccount,
     setName,
+    setTokens,
     setHasMFA
   ]);
 
