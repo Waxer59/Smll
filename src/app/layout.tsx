@@ -59,9 +59,11 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  children
+  children,
+  auth
 }: Readonly<{
   children: React.ReactNode;
+  auth: React.ReactNode;
 }>) {
   return (
     <html lang="en" className="h-full">
@@ -69,7 +71,10 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body className={`${inter.className} bg-zinc-950 dark h-full`}>
-        <MantineProvider defaultColorScheme="dark">{children}</MantineProvider>
+        <MantineProvider defaultColorScheme="dark">
+          {children}
+          {auth}
+        </MantineProvider>
         <Analytics />
         <Toaster invert />
         <Footer />

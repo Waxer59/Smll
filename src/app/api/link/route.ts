@@ -59,6 +59,8 @@ async function createShortenedLink(
     userId = user.$id;
   }
 
+  // TODO: Check if one link have password, if so, all links must have password
+
   const areAllPasswordsUnique = areAllLinksPasswordsUnique(link.links);
 
   if (!areAllPasswordsUnique) {
