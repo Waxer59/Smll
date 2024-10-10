@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathnameStore } from '@/store/pathname';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -11,8 +12,14 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   const router = useRouter();
+  const getPreviousPathname = usePathnameStore(
+    (state) => state.getPreviousPathname
+  );
+  const isPreviousPathnameRoot = getPreviousPathname() === '/';
 
   useEffect(() => {
+    if (!isPreviousPathnameRoot) return;
+
     // Detect when the user has clicked outside the modal
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -28,12 +35,12 @@ export default function AuthLayout({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [router]);
+  }, [isPreviousPathnameRoot, router]);
 
   return (
     <div
       id={MODAL_ID}
-      className="z-10 fixed top-0 w-full h-full flex flex-col items-center justify-center before:absolute before:w-full before:h-full before:bg-background/50 before:z-0 before:top-0 before:left-0 before:blur-md">
+      className={`z-10 fixed top-0 w-full h-full flex flex-col items-center justify-center before:absolute before:w-full before:h-full before:bg-background${isPreviousPathnameRoot ? '/50' : ''} before:z-0 before:top-0 before:left-0 before:blur-md`}>
       {children}
     </div>
   );

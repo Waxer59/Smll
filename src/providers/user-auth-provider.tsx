@@ -19,7 +19,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-export const UserAuth: React.FC<Props> = ({ children }) => {
+export const UserAuthProvider: React.FC<Props> = ({ children }) => {
   const setName = useAccountStore((state) => state.setName);
   const setEmail = useAccountStore((state) => state.setEmail);
   const setHasEmailVerification = useAccountStore(
@@ -40,7 +40,7 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
       const user = await getLoggedInUser();
 
       if (user === 'MFA') {
-        router.push('/login?mfa=true');
+        router.push('/mfa');
         return;
       }
 
@@ -90,7 +90,9 @@ export const UserAuth: React.FC<Props> = ({ children }) => {
     setHasEmailVerification,
     setIsPasswordlessAccount,
     setName,
-    setHasMFA
+    setHasMFA,
+    setTokens,
+    router
   ]);
 
   return <>{children}</>;

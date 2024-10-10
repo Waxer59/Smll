@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { PUBLIC_PATHNAMES } from './constants';
+import { AUTH_PATHNAMES } from './constants';
 import { getLoggedInUser } from './lib/server/appwrite-functions/auth';
 
 export async function middleware(request: NextRequest) {
@@ -11,8 +11,14 @@ export async function middleware(request: NextRequest) {
   const user = await getLoggedInUser();
 
   // Redirect to dashboard if the user is logged in
-  if (PUBLIC_PATHNAMES.includes(basePathname)) {
-    if (user && user !== 'MFA') {
+  if (AUTH_PATHNAMES.includes(basePathname)) {
+    const isMfaRoute =
+      basePathname === '/mfa' || basePathname === '/mfa-recovery';
+    if (isMfaRoute && user === 'MFA') {
+      return;
+    } else if (user === 'MFA') {
+      return NextResponse.redirect(new URL('/mfa', request.url));
+    } else if (user) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
