@@ -5,12 +5,17 @@ import { sendVerificationEmail } from '@/lib/server/appwrite-functions/auth';
 import { useAccountStore } from '@/store/account';
 import { Button, Modal } from '@mantine/core';
 import { Mail } from 'lucide-react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 export const EmailVerification = () => {
   const hasEmailVerification = useAccountStore(
     (state) => state.hasEmailVerification
   );
+
+  useEffect(() => {
+    sendVerificationEmail();
+  }, []);
 
   const handleResendEmail = () => {
     toast.success('Verification email sent.');

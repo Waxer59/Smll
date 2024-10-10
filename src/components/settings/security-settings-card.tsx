@@ -24,6 +24,9 @@ import { RecoveryCodesModal } from './recovery-codes-modal';
 export const SecuritySettingsCard = () => {
   const email = useAccountStore((state) => state.email);
   const hasMFA = useAccountStore((state) => state.hasMFA);
+  const isPasswordlessAccount = useAccountStore(
+    (state) => state.isPasswordlessAccount
+  );
   const setHasMFA = useAccountStore((state) => state.setHasMFA);
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] =
@@ -66,41 +69,47 @@ export const SecuritySettingsCard = () => {
       withBorder>
       <h2 className="text-3xl font-bold">Security</h2>
       <div className="flex flex-col gap-6 w-full">
-        <div className="flex flex-col gap-2 items-center">
-          <div className="flex items-center justify-between w-full">
-            <h3 className="text-base font-medium self-start">
-              Multi-factor authentication
-            </h3>
-            <Tooltip
-              label="Enhance your account security with MFA"
-              color="gray">
-              <Info size={16} />
-            </Tooltip>
-          </div>
-          <Button
-            variant="light"
-            color="gray"
-            radius="md"
-            size="md"
-            className="w-full"
-            leftSection={hasMFA ? <ShieldCheck /> : <Shield />}
-            onClick={handleToggleMFA}>
-            {hasMFA ? 'Disable MFA' : 'Enable MFA'}
-          </Button>
-        </div>
-        <div className="flex flex-col gap-2 items-center">
-          <h3 className="text-base font-medium self-start">Reset password</h3>
-          <Button
-            variant="light"
-            color="gray"
-            radius="md"
-            onClick={handleSendResetLink}
-            size="md"
-            className="w-full"
-            leftSection={<Mail />}>
-            Send reset link
-          </Button>
-        </div>
+        {!isPasswordlessAccount && (
+          <>
+            <div className="flex flex-col gap-2 items-center">
+              <div className="flex items-center justify-between w-full">
+                <h3 className="text-base font-medium self-start">
+                  Multi-factor authentication
+                </h3>
+                <Tooltip
+                  label="Enhance your account security with MFA"
+                  color="gray">
+                  <Info size={16} />
+                </Tooltip>
+              </div>
+              <Button
+                variant="light"
+                color="gray"
+                radius="md"
+                size="md"
+                className="w-full"
+                leftSection={hasMFA ? <ShieldCheck /> : <Shield />}
+                onClick={handleToggleMFA}>
+                {hasMFA ? 'Disable MFA' : 'Enable MFA'}
+              </Button>
+            </div>
+            <div className="flex flex-col gap-2 items-center">
+              <h3 className="text-base font-medium self-start">
+                Reset password
+              </h3>
+              <Button
+                variant="light"
+                color="gray"
+                radius="md"
+                onClick={handleSendResetLink}
+                size="md"
+                className="w-full"
+                leftSection={<Mail />}>
+                Send reset link
+              </Button>
+            </div>
+          </>
+        )}
         <Button
           variant="light"
           color="red"

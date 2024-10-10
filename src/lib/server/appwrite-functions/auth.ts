@@ -109,6 +109,28 @@ export async function createMFAChallenge(): Promise<string | null> {
   return challengeId;
 }
 
+export async function createMFARecoveryChallenge(): Promise<string | null> {
+  const sessionClient = await createSessionClient();
+
+  if (!sessionClient) {
+    return null;
+  }
+
+  const { account } = sessionClient;
+  let challengeId = null;
+
+  try {
+    const challenge = await account.createMfaChallenge(
+      AuthenticationFactor.Recoverycode
+    );
+    challengeId = challenge.$id;
+  } catch (error) {
+    console.log(error);
+  }
+
+  return challengeId;
+}
+
 export async function registerUser(
   email: string,
   password: string

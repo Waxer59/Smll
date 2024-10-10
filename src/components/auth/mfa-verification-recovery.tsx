@@ -1,17 +1,55 @@
 'use client';
 
 import { AuthCardLayout } from '@/layouts/auth-card-layout';
+import {
+  createMFARecoveryChallenge,
+  verifyMFA
+} from '@/lib/server/appwrite-functions/auth';
 import { TextInput, Button } from '@mantine/core';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+
+let isChallengeCreated = false;
 
 export const MfaVerificationRecovery = () => {
   const [code, setCode] = useState('');
+  const [challengeId, setChallengeId] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleVerify = async () => {
-    console.log(code);
+    if (!challengeId) return;
+
+    const isVerified = await verifyMFA(challengeId, code);
+
+    if (!isVerified) {
+      toast.error('Invalid code.');
+      return;
+    }
+
+    toast.success('MFA verified successfully.');
+    router.push('/dashboard');
   };
+
+  useEffect(() => {
+    if (isChallengeCreated) return;
+
+    const startMFAChallenge = async () => {
+      const challengeId = await createMFARecoveryChallenge();
+
+      if (!challengeId) {
+        toast.error('Failed to create MFA challenge.');
+        return;
+      }
+
+      setChallengeId(challengeId);
+    };
+
+    startMFAChallenge();
+    isChallengeCreated = true;
+  }, [router]);
 
   return (
     <AuthCardLayout title="MFA Verification Recovery">

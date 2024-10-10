@@ -53,7 +53,7 @@ export const LoginCard = () => {
       return;
     }
 
-    setIsLoginLoading(false);
+    router.refresh();
     router.push('/dashboard');
   };
 

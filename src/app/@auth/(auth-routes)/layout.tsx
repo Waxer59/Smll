@@ -15,6 +15,7 @@ export default function AuthLayout({
   const getPreviousPathname = usePathnameStore(
     (state) => state.getPreviousPathname
   );
+  const addHistory = usePathnameStore((state) => state.addHistory);
   const isPreviousPathnameRoot = getPreviousPathname() === '/';
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function AuthLayout({
 
       if (id === MODAL_ID) {
         router.replace('/');
+        addHistory('/');
       }
     };
 

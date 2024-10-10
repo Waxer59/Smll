@@ -36,12 +36,11 @@ export const MfaVerification: React.FC = () => {
 
     if (!challengeId) {
       toast.error('Failed to create MFA challenge.');
-      router.push('/login');
       return;
     }
 
     setChallengeId(challengeId);
-  }, [router]);
+  }, []);
 
   const handleVerify = async () => {
     if (!challengeId) return;
