@@ -39,19 +39,25 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
     async function initAccountStore() {
       const user = await getLoggedInUser();
 
+      if (!user) {
+        router.push('/');
+        return;
+      }
+
+      const userAccountSession = await getUserAccountSession();
+
       if (user === 'MFA') {
         router.push('/mfa');
         return;
       }
 
-      const userAccountSession = await getUserAccountSession();
-      const accountLinks = await getUserShortenedLinks();
-      const accountTokens = await getUserTokens();
-
-      if (!user || !userAccountSession) {
+      if (!userAccountSession) {
         router.push('/');
         return;
       }
+
+      const accountLinks = await getUserShortenedLinks();
+      const accountTokens = await getUserTokens();
 
       setName(user.name);
       setHasMFA(user.mfa);

@@ -47,13 +47,11 @@ export const SecuritySettingsCard = () => {
     } else {
       const recoveryCodes = await enableAccountMFA();
 
-      if (!recoveryCodes) {
-        toast.error('Failed to enable MFA.');
-        return;
-      }
-
       setIsRecoveryCodesModalOpen(true);
-      setRecoveryCodes(recoveryCodes);
+
+      if (recoveryCodes) {
+        setRecoveryCodes(recoveryCodes);
+      }
 
       toast.success('MFA enabled successfully.');
     }
@@ -140,7 +138,7 @@ export const SecuritySettingsCard = () => {
         onClose={() => setIsCloseAllSessionsOpen(false)}
       />
       <RecoveryCodesModal
-        isOpen={isRecoveryCodesModalOpen}
+        isOpen={isRecoveryCodesModalOpen && recoveryCodes.length > 0}
         onClose={() => setIsRecoveryCodesModalOpen(false)}
         recoveryCodes={recoveryCodes}
       />

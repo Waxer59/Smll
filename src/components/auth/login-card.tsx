@@ -10,7 +10,6 @@ import { LoginAlternativeButton } from './login-alternative-button';
 import { useState } from 'react';
 import { account } from '@/lib/client/appwrite';
 import { OAuthProvider } from 'appwrite';
-import { useRouter } from 'next/navigation';
 import { loginUser } from '@/lib/server/appwrite-functions/auth';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
@@ -20,10 +19,9 @@ const formSchema = z.object({
   password: z.string()
 });
 
-export const LoginCard = () => {
+export const LoginCard: React.FC = () => {
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [isGithubLoginLoading, setIsGithubLoginLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
@@ -53,8 +51,10 @@ export const LoginCard = () => {
       return;
     }
 
-    router.refresh();
-    router.push('/dashboard');
+    // I'm not using next router because currently it doesn't work with parallel routes
+    // I need to force the hard-refresh to ensure that the page is loaded
+    // https://github.com/vercel/next.js/issues/66025
+    window.location.href = '/dashboard';
   };
 
   const handleGithubLogin = async () => {

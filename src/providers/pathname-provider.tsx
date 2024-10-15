@@ -9,6 +9,7 @@ export const PathnameProvider = ({ children }: any) => {
   const addHistory = usePathnameStore((state) => state.addHistory);
 
   useEffect(() => {
+    console.log(pathname);
     addHistory(pathname);
   }, [addHistory, pathname]);
 

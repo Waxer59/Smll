@@ -2,7 +2,7 @@
 
 import { usePathnameStore } from '@/store/pathname';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const MODAL_ID = 'modal-layout';
 
@@ -12,11 +12,13 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   const router = useRouter();
+  const history = usePathnameStore((state) => state.history);
   const getPreviousPathname = usePathnameStore(
     (state) => state.getPreviousPathname
   );
   const addHistory = usePathnameStore((state) => state.addHistory);
-  const isPreviousPathnameRoot = getPreviousPathname() === '/';
+  const [isPreviousPathnameRoot, setIsPreviousPathnameRoot] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (!isPreviousPathnameRoot) return;
@@ -37,7 +39,11 @@ export default function AuthLayout({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isPreviousPathnameRoot, router]);
+  }, [addHistory, isPreviousPathnameRoot, router]);
+
+  useEffect(() => {
+    setIsPreviousPathnameRoot(getPreviousPathname() === '/');
+  }, [getPreviousPathname, history]);
 
   return (
     <div

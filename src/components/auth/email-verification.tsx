@@ -14,8 +14,8 @@ export const EmailVerification = () => {
   );
 
   useEffect(() => {
-    sendVerificationEmail();
-  }, []);
+    if (!hasEmailVerification) sendVerificationEmail();
+  }, [hasEmailVerification]);
 
   const handleResendEmail = () => {
     toast.success('Verification email sent.');

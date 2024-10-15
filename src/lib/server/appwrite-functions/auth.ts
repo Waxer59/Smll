@@ -197,16 +197,19 @@ export async function enableAccountMFA(): Promise<string[] | null> {
   }
 
   const { account } = sessionClient;
-  const recoveryCodes = await account.createMfaRecoveryCodes();
+  let recoveryCodes = null;
 
   try {
-    await account.updateMFA(true);
+    const mfa = await account.createMfaRecoveryCodes();
+    recoveryCodes = mfa.recoveryCodes;
   } catch (error) {
     console.log(error);
     return null;
   }
 
-  return recoveryCodes.recoveryCodes;
+  await account.updateMFA(true);
+
+  return recoveryCodes;
 }
 
 export async function resetPassword(email: string) {

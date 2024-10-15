@@ -40,7 +40,8 @@ export const RecoveryCodesModal: React.FC<Props> = ({
           <h2 className="text-3xl font-bold">Recovery codes</h2>
           <p>
             These are the recovery codes for your MFA account. Save them in a
-            safe place, and don't share them with anyone.
+            safe place, and don't share them with anyone. These codes can only
+            be generated once.
           </p>
         </div>
 
