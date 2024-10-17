@@ -9,7 +9,6 @@ import {
 import { Button, TextInput } from '@mantine/core';
 import { Check, LogOut, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -18,11 +17,14 @@ let isChallengeCreated = false;
 export const MfaVerification: React.FC = () => {
   const [code, setCode] = useState('');
   const [challengeId, setChallengeId] = useState<string | null>(null);
-  const router = useRouter();
 
   const handleLogout = async () => {
     await logoutUser();
-    router.push('/');
+
+    // I'm not using next router because currently it doesn't work with parallel routes
+    // I need to force the hard-refresh to ensure the page is loaded
+    // https://github.com/vercel/next.js/issues/66025
+    window.location.href = '/';
   };
 
   const handleResend = async () => {
@@ -53,7 +55,11 @@ export const MfaVerification: React.FC = () => {
     }
 
     toast.success('MFA verified successfully.');
-    router.push('/dashboard');
+
+    // I'm not using next router because currently it doesn't work with parallel routes
+    // I need to force the hard-refresh to ensure the page is loaded
+    // https://github.com/vercel/next.js/issues/66025
+    window.location.href = '/dashboard';
   };
 
   useEffect(() => {
@@ -61,7 +67,7 @@ export const MfaVerification: React.FC = () => {
 
     startMFAChallenge();
     isChallengeCreated = true;
-  }, [router, startMFAChallenge]);
+  }, [startMFAChallenge]);
 
   return (
     <AuthCardLayout title="MFA Verification">

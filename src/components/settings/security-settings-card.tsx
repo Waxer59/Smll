@@ -49,7 +49,7 @@ export const SecuritySettingsCard = () => {
 
       setIsRecoveryCodesModalOpen(true);
 
-      if (recoveryCodes) {
+      if (recoveryCodes && recoveryCodes.length > 0) {
         setRecoveryCodes(recoveryCodes);
       }
 

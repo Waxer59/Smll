@@ -52,7 +52,7 @@ export const LoginCard: React.FC = () => {
     }
 
     // I'm not using next router because currently it doesn't work with parallel routes
-    // I need to force the hard-refresh to ensure that the page is loaded
+    // I need to force the hard-refresh to ensure the page is loaded
     // https://github.com/vercel/next.js/issues/66025
     window.location.href = '/dashboard';
   };
