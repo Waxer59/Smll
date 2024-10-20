@@ -251,6 +251,21 @@ export async function deleteAccount() {
       );
     }
 
+    // Delete all account tokens
+    const tokens = await database.listDocuments(
+      APPWRITE_DATABASES.link_shortener,
+      APPWRITE_COLLECTIONS.account_tokens,
+      [Query.equal('creatorId', [userId])]
+    );
+
+    for (const token of tokens.documents) {
+      await database.deleteDocument(
+        APPWRITE_DATABASES.link_shortener,
+        APPWRITE_COLLECTIONS.account_tokens,
+        token.$id
+      );
+    }
+
     await users.delete(userId);
   } catch (error) {
     console.log(error);

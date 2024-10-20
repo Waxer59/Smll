@@ -20,6 +20,7 @@ interface Props {
 }
 
 export const UserAuthProvider: React.FC<Props> = ({ children }) => {
+  const setLinks = useAccountStore((state) => state.setLinks);
   const setName = useAccountStore((state) => state.setName);
   const setEmail = useAccountStore((state) => state.setEmail);
   const setHasEmailVerification = useAccountStore(
@@ -42,14 +43,12 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
       if (!user) {
         router.push('/');
         return;
-      }
-
-      const userAccountSession = await getUserAccountSession();
-
-      if (user === 'MFA') {
+      } else if (user === 'MFA') {
         router.push('/mfa');
         return;
       }
+
+      const userAccountSession = await getUserAccountSession();
 
       if (!userAccountSession) {
         router.push('/');
@@ -59,6 +58,7 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
       const accountLinks = await getUserShortenedLinks();
       const accountTokens = await getUserTokens();
 
+      setLinks(accountLinks ?? []);
       setName(user.name);
       setHasMFA(user.mfa);
       setEmail(user.email);
@@ -98,7 +98,8 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
     setIsPasswordlessAccount,
     setName,
     setHasMFA,
-    setTokens
+    setTokens,
+    setLinks
   ]);
 
   return <>{children}</>;

@@ -12,8 +12,12 @@ import {
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { Minus, Plus, MousePointerClick } from 'lucide-react';
-import { useState } from 'react';
-import { CreateLinkDetails, SmartLinkDetails } from '../../types/index';
+import { useEffect, useState } from 'react';
+import {
+  CreateLinkDetails,
+  LinkDetails,
+  SingleLinkDetails
+} from '../../types/index';
 import { LONG_LINK_EXAMPLE } from '@/constants';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -33,30 +37,43 @@ const formSchema = z.object({
   code: z.string().optional()
 });
 
+interface SmartLinkDetails extends SingleLinkDetails {
+  id: string;
+}
+
 interface Props {
+  link?: LinkDetails;
+  isEditing?: boolean;
   opened: boolean;
   onClose: () => void;
   onSubmit: (link: CreateLinkDetails) => void;
-  smartLinks?: SmartLinkDetails[];
-  isCreatingLink?: boolean;
+  isLoadingCreation?: boolean;
 }
 
 export const NewLinkModal: React.FC<Props> = ({
   opened,
-  smartLinks: smartLinksProp,
-  isCreatingLink,
+  isLoadingCreation,
   onClose,
-  onSubmit
+  onSubmit,
+  isEditing,
+  link
 }) => {
+  const [mainLink, setMainLink] = useState(link?.links[0].url ?? '');
+  const [mainPassword, setMainPassword] = useState('');
   const [smartLinks, setSmartLinks] = useState<SmartLinkDetails[]>(
-    smartLinksProp ?? []
+    link?.links?.slice(1).map((el) => ({ ...el, id: crypto.randomUUID() })) ??
+      []
   );
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>(link?.tags ?? []);
+  const [expireDate, setExpireDate] = useState<Date | undefined>(undefined);
+  const [activeDate, setActiveDate] = useState<Date | undefined>(undefined);
+  const [maxClicks, setMaxClicks] = useState<number | undefined>(undefined);
+  const [code, setCode] = useState<string>(link?.code ?? '');
   const isSmartPassword = smartLinks.length > 0;
 
   const onChangeSmartLink = (
     id: string,
-    editedFields: Partial<SmartLinkDetails>
+    editedFields: Partial<SingleLinkDetails>
   ) => {
     setSmartLinks(
       smartLinks.map((link) => {
@@ -119,7 +136,7 @@ export const NewLinkModal: React.FC<Props> = ({
           password: link.password
         }))
       ],
-      maxVisits: maxClicks,
+      maxVisits: maxClicks === 0 ? undefined : maxClicks,
       activeAt,
       deleteAt,
       code,
@@ -148,7 +165,7 @@ export const NewLinkModal: React.FC<Props> = ({
       opened={opened}
       onClose={onClose}
       size="lg"
-      title="Create new link"
+      title={isEditing ? 'Edit link' : 'Create new link'}
       radius="md">
       <form
         className="flex flex-col gap-8 text-lg w-full"
@@ -163,12 +180,16 @@ export const NewLinkModal: React.FC<Props> = ({
                 placeholder={LONG_LINK_EXAMPLE}
                 description="Link to be shortened"
                 name="mainLink"
+                value={mainLink}
+                onChange={(e) => setMainLink(e.target.value)}
                 size="md"
                 radius="md"
                 required
               />
               <PasswordInput
                 required={isSmartPassword}
+                value={mainPassword}
+                onChange={(e) => setMainPassword(e.target.value)}
                 label="Password"
                 name="mainPassword"
                 placeholder="Password"
@@ -240,6 +261,8 @@ export const NewLinkModal: React.FC<Props> = ({
             placeholder="abc123"
             description="Custom code to be used instead of random code"
             className="flex-1"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
             name="code"
             size="md"
             radius="md"
@@ -250,6 +273,8 @@ export const NewLinkModal: React.FC<Props> = ({
             description="Link will be disabled after this number of clicks"
             className="flex-1"
             name="maxClicks"
+            value={maxClicks}
+            onChange={(value) => setMaxClicks(+value)}
             min={0}
             size="md"
             radius="md"
@@ -264,6 +289,8 @@ export const NewLinkModal: React.FC<Props> = ({
             name="expires"
             size="md"
             radius="md"
+            value={expireDate}
+            onChange={(date) => setExpireDate(date ?? undefined)}
           />
           <DateTimePicker
             label="Begins"
@@ -273,6 +300,8 @@ export const NewLinkModal: React.FC<Props> = ({
             name="activeAt"
             size="md"
             radius="md"
+            value={activeDate}
+            onChange={(date) => setActiveDate(date ?? undefined)}
           />
         </div>
         <TagsInput
@@ -290,9 +319,9 @@ export const NewLinkModal: React.FC<Props> = ({
           radius="md"
           color="dark"
           className="w-full"
-          loading={isCreatingLink}
-          disabled={isCreatingLink}>
-          Create link
+          loading={isLoadingCreation}
+          disabled={isLoadingCreation}>
+          {isEditing ? 'Save' : 'Create link'}
         </Button>
       </form>
     </Modal>

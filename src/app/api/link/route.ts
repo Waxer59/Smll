@@ -7,6 +7,9 @@ const requestSchema = z.object({
   link: shortenedLinkSchema
 });
 
+// TODO: Implement GET all links method
+export async function GET(request: NextRequest) {}
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
@@ -24,9 +27,9 @@ export async function POST(request: NextRequest) {
 
   const { success, errors, shortenedLink } = await createShortenedLink(link);
 
-  if (!success) {
+  if (!success || !shortenedLink) {
     return NextResponse.json({ errors }, { status: 400 });
   }
 
-  return NextResponse.json({ shortenedLink });
+  return NextResponse.json({ ...shortenedLink });
 }

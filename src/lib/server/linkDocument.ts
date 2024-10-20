@@ -6,7 +6,7 @@ import {
   SALT_ROUNDS
 } from '@/constants';
 import { areAllLinksPasswordsUnique } from '@/helpers/areAllLinksPasswordsUnique';
-import { CreateLinkDetails, LinkDetails } from '@/types';
+import { CreateLinkDetails, LinkDetails, SingleLinkDetails } from '@/types';
 import { nanoid } from 'nanoid';
 import { Query, ID } from 'node-appwrite';
 import { createAdminClient } from './appwrite';
@@ -15,6 +15,8 @@ import bcrypt from 'bcrypt';
 import { isDateBefore } from '@/helpers/isDateBefore';
 import { isFutureDate } from '@/helpers/isFutureDate';
 import { z } from 'zod';
+
+const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
 export async function isCodeAvailable(code: string): Promise<boolean> {
   const { database } = await createAdminClient();
@@ -187,21 +189,47 @@ export async function createShortenedLink(
   }
 
   try {
-    const linkDocument = await database.createDocument(
+    const {
+      $id,
+      $collectionId,
+      $createdAt,
+      $databaseId,
+      $permissions,
+      $updatedAt,
+      ...linkDocument
+    } = await database.createDocument(
       APPWRITE_DATABASES.link_shortener,
       APPWRITE_COLLECTIONS.shortened_links,
       ID.unique(),
       {
+        ...link,
         code: uniqueCode,
-        creatorId: userId,
-        ...link
+        creatorId: userId
       }
     );
 
     return {
       success: true,
       errors: [],
-      shortenedLink: linkDocument as unknown as LinkDetails
+      shortenedLink: {
+        ...(linkDocument as {
+          links: SingleLinkDetails[];
+          code: string;
+          tags: string[];
+          maxVisits: number;
+          activeAt: Date;
+          deleteAt: Date;
+        }),
+        id: $id,
+        isEnabled: Boolean(link?.activeAt && link.activeAt > new Date()),
+        originalLink: link.links[0].url,
+        shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${uniqueCode}`,
+        createdAt: new Date($createdAt),
+        clicks: 0,
+        isProtectedByPassword: Boolean(link.links[0].password),
+        isSmartLink: Boolean(link.links.length > 1),
+        metrics: []
+      }
     };
   } catch (error) {
     console.log(error);

@@ -1,3 +1,5 @@
+'use client';
+
 import { LinkDetails } from '@/types';
 import {
   Card,
@@ -17,8 +19,11 @@ import {
   QrCode,
   ToggleRight,
   Lock,
-  ToggleLeft
+  ToggleLeft,
+  Trash
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useUiStore } from '@/store/ui';
 
 interface Props {
   link: LinkDetails;
@@ -38,6 +43,13 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
     isProtectedByPassword,
     isSmartLink
   } = link;
+  const setQrLinkId = useUiStore((state) => state.setQrLinkId);
+  const setEditLinkId = useUiStore((state) => state.setEditLinkId);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shortenedLink);
+    toast.success('Link copied to clipboard.');
+  };
 
   return (
     <Card radius="md" className="flex flex-col h-full gap-6">
@@ -53,16 +65,38 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
               <BrainCircuit size={16} />
             </Tooltip>
           )}
-          <h3 className="text-2xl font-semibold">{originalLink}</h3>
-          <div className="flex items-center gap-2">
-            <ActionIcon color="subtle" variant="subtle">
-              <VisuallyHidden>Shorten Link</VisuallyHidden>
-              <ExternalLink size={16} />
-            </ActionIcon>
-            <ActionIcon color="subtle" variant="subtle">
-              <VisuallyHidden>Link Settings</VisuallyHidden>
-              <Settings size={16} />
-            </ActionIcon>
+          <div className="flex items-center justify-between w-full">
+            <h3 className="text-2xl font-semibold max-w-[20ch] truncate">
+              {originalLink}
+            </h3>
+            <div className="flex items-center gap-2">
+              <Tooltip label="Open shortened link" color="gray">
+                <a
+                  href={shortenedLink}
+                  target="_blank"
+                  rel="noreferrer noopener">
+                  <ActionIcon color="subtle" variant="subtle">
+                    <VisuallyHidden>Shorten Link</VisuallyHidden>
+                    <ExternalLink size={16} />
+                  </ActionIcon>
+                </a>
+              </Tooltip>
+              <Tooltip label="Edit link" color="gray">
+                <ActionIcon
+                  color="subtle"
+                  variant="subtle"
+                  onClick={() => setEditLinkId(link.id)}>
+                  <VisuallyHidden>Edit Link</VisuallyHidden>
+                  <Settings size={16} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label="Delete link" color="gray">
+                <ActionIcon color="subtle" variant="subtle" onClick={() => {}}>
+                  <VisuallyHidden>Delete Link</VisuallyHidden>
+                  <Trash size={16} />
+                </ActionIcon>
+              </Tooltip>
+            </div>
           </div>
         </div>
         <h3 className="text-sm text-gray-400">{shortenedLink}</h3>
@@ -70,7 +104,9 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
       <ul className="flex gap-10 items-center">
         <li className="flex items-center gap-2">
           <Calendar size={16} />
-          <span>Created: {createdAt.toLocaleDateString('en-US')}</span>
+          <span>
+            Created: {new Date(createdAt).toLocaleDateString('en-US')}
+          </span>
         </li>
         <li className="flex items-center gap-2">
           <MousePointerClick size={16} />
@@ -90,7 +126,7 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
                 variant="light"
                 size="lg"
                 className="capitalize">
-                Begins: {activeAt.toLocaleDateString('en-US')}
+                Begins: {new Date(activeAt).toLocaleDateString('en-US')}
               </Badge>
             </Tooltip>
           </li>
@@ -105,26 +141,34 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
                 variant="light"
                 size="lg"
                 className="capitalize">
-                Expires: {deleteAt.toLocaleDateString('en-US')}
+                Expires: {new Date(deleteAt).toLocaleDateString('en-US')}
               </Badge>
             </Tooltip>
           </li>
         )}
       </ul>
       <ul className="flex gap-1">
-        {tags?.map(({ id, name }) => (
-          <li key={id}>
-            <Badge>{name}</Badge>
+        {tags?.map((tag) => (
+          <li key={tag}>
+            <Badge>{tag}</Badge>
           </li>
         ))}
       </ul>
       <footer>
         <div className="flex justify-between">
           <div className="flex items-center gap-2">
-            <ActionIcon variant="default" color="gray" size="lg">
+            <ActionIcon
+              variant="default"
+              color="gray"
+              size="lg"
+              onClick={handleCopyLink}>
               <Copy size={18} />
             </ActionIcon>
-            <ActionIcon variant="default" color="gray" size="lg">
+            <ActionIcon
+              variant="default"
+              color="gray"
+              size="lg"
+              onClick={() => setQrLinkId(link.id)}>
               <QrCode size={18} />
             </ActionIcon>
           </div>

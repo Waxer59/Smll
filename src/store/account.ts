@@ -1,11 +1,11 @@
-import { TokenDetails } from '@/types';
+import { LinkDetails, TokenDetails } from '@/types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 interface State {
   name: string;
   email: string;
-  links: any;
+  links: LinkDetails[];
   tokens: TokenDetails[];
   hasEmailVerification: boolean;
   hasMFA: boolean;
@@ -21,7 +21,8 @@ interface Actions {
   addToken: (token: TokenDetails) => void;
   deleteToken: (token: string) => void;
   setHasMFA: (hasMFA: boolean) => void;
-  setLinks: (links: any) => void;
+  setLinks: (links: LinkDetails[]) => void;
+  addLink: (link: LinkDetails) => void;
   clear(): void;
 }
 
@@ -45,6 +46,10 @@ export const useAccountStore = create<State & Actions>()(
     setHasEmailVerification: (hasEmailVerification) =>
       set({ hasEmailVerification }),
     setLinks: (links) => set({ links }),
+    addLink: (link) =>
+      set((state) => ({
+        links: [...state.links, link]
+      })),
     setHasMFA: (hasMFA) => set({ hasMFA }),
     setTokens: (tokens) => set({ tokens }),
     addToken: (token) =>

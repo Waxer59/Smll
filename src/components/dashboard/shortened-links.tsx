@@ -25,13 +25,11 @@ export const ShortenedLinks: React.FC<Props> = ({ tags, links }) => {
         <li>
           <CreateLink />
         </li>
-        <li>
-          {links?.map((link) => (
-            <li key={link.id}>
-              <ShortenedLink link={link} />
-            </li>
-          ))}
-        </li>
+        {links?.map((link) => (
+          <li key={link.id}>
+            <ShortenedLink link={link} />
+          </li>
+        ))}
       </ul>
     </div>
   );

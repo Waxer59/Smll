@@ -3,7 +3,6 @@
 import {
   Client,
   Account,
-  type Models,
   Databases,
   Avatars,
   Users,
@@ -12,6 +11,9 @@ import {
 import { cookies } from 'next/headers';
 import { APPWRITE_COLLECTIONS, APPWRITE_DATABASES, Cookies } from '@/constants';
 import { getLoggedInUser } from './appwrite-functions/auth';
+import { LinkDetails } from '@/types';
+
+const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
 const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY!;
 const NEXT_PUBLIC_APPWRITE_PROJECT_ID =
@@ -64,7 +66,7 @@ export async function createAdminClient() {
 
 export async function getUserShortenedLinks(
   userId?: string
-): Promise<Models.DocumentList<Models.Document> | null> {
+): Promise<LinkDetails[] | null> {
   if (!userId) {
     const user = await getLoggedInUser();
 
@@ -76,13 +78,47 @@ export async function getUserShortenedLinks(
   }
 
   const { database } = await createAdminClient();
-  let links = null;
+  let links: LinkDetails[] | null = null;
 
   try {
-    links = await database.listDocuments(
+    const resp = await database.listDocuments(
       APPWRITE_DATABASES.link_shortener,
       APPWRITE_COLLECTIONS.shortened_links,
       [Query.equal('creatorId', [userId])]
+    );
+
+    links = resp.documents.map(
+      ({
+        $id,
+        $createdAt,
+        code,
+        isEnabled,
+        tags,
+        activeAt,
+        deleteAt,
+        links,
+        maxVisits,
+        metrics
+      }) => ({
+        id: $id,
+        code,
+        isEnabled,
+        createdAt: $createdAt,
+        tags,
+        activeAt,
+        deleteAt,
+        links: links.map(({ $id, url }: { $id: string; url: string }) => ({
+          id: $id,
+          url
+        })),
+        shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${code}`,
+        isProtectedByPassword: Boolean(links[0].password),
+        isSmartLink: Boolean(links.length > 1),
+        maxVisits,
+        originalLink: links[0].url,
+        metrics,
+        clicks: 0
+      })
     );
   } catch (error) {
     console.log(error);
