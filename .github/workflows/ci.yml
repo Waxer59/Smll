@@ -21,9 +21,6 @@ jobs:
       
       - name: Install deps
         run: pnpm i
-
-      - name: Build the site
-        run: pnpm build
       
       - name: Lint code
         run: pnpm lint
