@@ -4,11 +4,11 @@ import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { Toaster } from 'sonner';
 import Footer from '@/components/footer';
+import { PathnameProvider } from '@/providers/pathname-provider';
 import '../styles/globals.css';
 import '@mantine/dates/styles.css';
 import '@mantine/charts/styles.css';
 import '@mantine/core/styles.css';
-import { PathnameProvider } from '@/providers/pathname-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 

@@ -19,10 +19,11 @@ export interface CreateLinkDetails {
   deleteAt?: Date;
   activeAt?: Date;
   maxVisits?: number;
-  tags?: TagDetails[];
+  tags?: string[];
+  code?: string;
 }
 
-export interface LinkDetails extends CreateLinkDetails {
+export interface LinkDetails extends Omit<CreateLinkDetails, 'tags'> {
   id: string;
   code: string;
   isEnabled: boolean;
@@ -30,6 +31,7 @@ export interface LinkDetails extends CreateLinkDetails {
   shortenedLink: string;
   clicks: number;
   metrics: MetricsDetails[];
+  tags: TagDetails[];
   createdAt: Date;
   isSmartLink: boolean;
   isProtectedByPassword: boolean;

@@ -1,0 +1,27 @@
+name: "CI"
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - 'main'
+jobs:
+  update-index:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v2
+      
+      - name: Install deps
+        run: pnpm i
+
+      - name: Build the site
+        run: pnpm build
+      
+      - name: Lint code
+        run: pnpm lint
+      
+      - name: Execute tests
+        run: pnpm test

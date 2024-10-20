@@ -42,7 +42,9 @@ export default function AuthLayout({
   }, [addHistory, isPreviousPathnameRoot, router]);
 
   useEffect(() => {
-    setIsPreviousPathnameRoot(getPreviousPathname() === '/');
+    if (getPreviousPathname() === '/') {
+      setIsPreviousPathnameRoot(true);
+    }
   }, [getPreviousPathname, history]);
 
   return (

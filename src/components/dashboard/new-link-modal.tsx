@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Modal,
   TextInput,
@@ -11,24 +13,45 @@ import {
 import { DateTimePicker } from '@mantine/dates';
 import { Minus, Plus, MousePointerClick } from 'lucide-react';
 import { useState } from 'react';
-import { LinkDetails, SmartLinkDetails } from '../../types/index';
+import { CreateLinkDetails, SmartLinkDetails } from '../../types/index';
 import { LONG_LINK_EXAMPLE } from '@/constants';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import { isDateBefore } from '@/helpers/isDateBefore';
+
+const formSchema = z.object({
+  links: z.array(
+    z.object({
+      url: z.string().url(),
+      password: z.string().optional()
+    })
+  ),
+  deleteAt: z.date().optional(),
+  activeAt: z.date().optional(),
+  maxVisits: z.number().optional(),
+  tags: z.string().array().optional(),
+  code: z.string().optional()
+});
 
 interface Props {
   opened: boolean;
   onClose: () => void;
-  onSubmit: (link: LinkDetails) => void;
+  onSubmit: (link: CreateLinkDetails) => void;
   smartLinks?: SmartLinkDetails[];
+  isCreatingLink?: boolean;
 }
 
 export const NewLinkModal: React.FC<Props> = ({
   opened,
   smartLinks: smartLinksProp,
-  onClose
+  isCreatingLink,
+  onClose,
+  onSubmit
 }) => {
   const [smartLinks, setSmartLinks] = useState<SmartLinkDetails[]>(
     smartLinksProp ?? []
   );
+  const [tags, setTags] = useState<string[]>([]);
   const isSmartPassword = smartLinks.length > 0;
 
   const onChangeSmartLink = (
@@ -62,6 +85,60 @@ export const NewLinkModal: React.FC<Props> = ({
     ]);
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target as HTMLFormElement);
+
+    const mainLink = formData.get('mainLink');
+    const mainPassword = formData.get('mainPassword');
+    const maxClicks = Number(formData.get('maxClicks'));
+    const code = formData.get('code');
+    const deleteAtRaw = formData.get('expires');
+    const activeAtRaw = formData.get('activeAt');
+
+    let deleteAt: Date | undefined;
+    let activeAt: Date | undefined;
+
+    if (deleteAtRaw) {
+      deleteAt = new Date(deleteAtRaw as string);
+    }
+
+    if (activeAtRaw) {
+      activeAt = new Date(activeAtRaw as string);
+    }
+
+    const { success, data } = formSchema.safeParse({
+      links: [
+        {
+          url: mainLink,
+          password: mainPassword
+        },
+        ...smartLinks.map((link) => ({
+          url: link.url,
+          password: link.password
+        }))
+      ],
+      maxVisits: maxClicks,
+      activeAt,
+      deleteAt,
+      code,
+      tags
+    });
+
+    if (!success) {
+      toast.error('Please check all fields are correct.');
+      return;
+    }
+
+    if (deleteAt && activeAt && isDateBefore(deleteAt, activeAt)) {
+      toast.error('Expires date must be after active date.');
+      return;
+    }
+
+    onSubmit(data);
+  };
+
   const removePasswordLink = (id: string) => {
     setSmartLinks(smartLinks.filter((link) => link.id !== id));
   };
@@ -73,7 +150,9 @@ export const NewLinkModal: React.FC<Props> = ({
       size="lg"
       title="Create new link"
       radius="md">
-      <form className="flex flex-col gap-8 text-lg w-full">
+      <form
+        className="flex flex-col gap-8 text-lg w-full"
+        onSubmit={handleSubmit}>
         <div className="flex flex-col gap-4 w-full">
           <ul className="flex flex-col gap-4 w-full">
             <li className="flex items-end gap-2 w-full">
@@ -83,6 +162,7 @@ export const NewLinkModal: React.FC<Props> = ({
                 className="flex-1"
                 placeholder={LONG_LINK_EXAMPLE}
                 description="Link to be shortened"
+                name="mainLink"
                 size="md"
                 radius="md"
                 required
@@ -90,6 +170,7 @@ export const NewLinkModal: React.FC<Props> = ({
               <PasswordInput
                 required={isSmartPassword}
                 label="Password"
+                name="mainPassword"
                 placeholder="Password"
                 className="flex-1"
                 description="Password to protect the link"
@@ -159,16 +240,16 @@ export const NewLinkModal: React.FC<Props> = ({
             placeholder="abc123"
             description="Custom code to be used instead of random code"
             className="flex-1"
+            name="code"
             size="md"
             radius="md"
-            required
-            withAsterisk={false}
           />
           <NumberInput
             label="Max clicks"
             leftSection={<MousePointerClick size={16} />}
             description="Link will be disabled after this number of clicks"
             className="flex-1"
+            name="maxClicks"
             min={0}
             size="md"
             radius="md"
@@ -180,6 +261,7 @@ export const NewLinkModal: React.FC<Props> = ({
             clearable
             description="Link will expire from this date and time"
             className="flex-1"
+            name="expires"
             size="md"
             radius="md"
           />
@@ -188,6 +270,7 @@ export const NewLinkModal: React.FC<Props> = ({
             clearable
             description="Link will be active from this date and time"
             className="flex-1"
+            name="activeAt"
             size="md"
             radius="md"
           />
@@ -197,10 +280,18 @@ export const NewLinkModal: React.FC<Props> = ({
           clearable
           description="Tags to categorize the link"
           placeholder='"Public", "Private"'
+          value={tags}
+          onChange={setTags}
           size="md"
           radius="md"
         />
-        <Button type="submit" radius="md" color="dark" className="w-full">
+        <Button
+          type="submit"
+          radius="md"
+          color="dark"
+          className="w-full"
+          loading={isCreatingLink}
+          disabled={isCreatingLink}>
           Create link
         </Button>
       </form>
