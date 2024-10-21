@@ -1,5 +1,9 @@
 import { NextRequest } from 'next/server';
 
-export async function GET(request: NextRequest) {}
-export async function PATCH(request: NextRequest) {}
-export async function DELETE(request: NextRequest) {}
+interface Params {
+  linkId: string;
+}
+
+export async function GET(request: NextRequest, params: Params) {}
+export async function PATCH(request: NextRequest, params: Params) {}
+export async function DELETE(request: NextRequest, params: Params) {}

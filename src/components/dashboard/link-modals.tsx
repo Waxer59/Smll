@@ -19,7 +19,7 @@ export const LinkModals = () => {
     <>
       {targetQrLink && (
         <QrModal
-          isOpen={qrLinkId !== null}
+          isOpen
           value={targetQrLink?.shortenedLink ?? ''}
           title={targetQrLink?.links[0].url ?? ''}
           onClose={() => setQrLinkId(null)}
@@ -27,7 +27,7 @@ export const LinkModals = () => {
       )}
       {targetEditLink && (
         <NewLinkModal
-          opened={editLinkId !== null}
+          opened
           onClose={() => setEditLinkId(null)}
           onSubmit={() => {}}
           link={targetEditLink}

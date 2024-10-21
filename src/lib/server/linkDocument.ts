@@ -8,7 +8,7 @@ import {
 import { areAllLinksPasswordsUnique } from '@/helpers/areAllLinksPasswordsUnique';
 import { CreateLinkDetails, LinkDetails, SingleLinkDetails } from '@/types';
 import { nanoid } from 'nanoid';
-import { Query, ID } from 'node-appwrite';
+import { Query, ID, Models } from 'node-appwrite';
 import { createAdminClient } from './appwrite';
 import { getLoggedInUser } from './appwrite-functions/auth';
 import bcrypt from 'bcrypt';
@@ -118,6 +118,30 @@ export function isLinkCorrect(link: CreateLinkDetails): {
   }
 
   return { success: errors.length === 0, errors };
+}
+
+export async function getShortenedLinkByCode(
+  code: string
+): Promise<Models.Document | null> {
+  const { database } = await createAdminClient();
+
+  try {
+    const link = await database.listDocuments(
+      APPWRITE_DATABASES.link_shortener,
+      APPWRITE_COLLECTIONS.shortened_links,
+      [Query.equal('code', code)]
+    );
+
+    if (link.total === 0) {
+      return null;
+    }
+
+    return link.documents[0];
+  } catch (error) {
+    console.log(error);
+  }
+
+  return null;
 }
 
 export async function createShortenedLink(
