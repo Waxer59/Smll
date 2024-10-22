@@ -21,7 +21,7 @@ export const ShortenedLinks: React.FC<Props> = ({ tags, links }) => {
           data={tags}
         />
       </div>
-      <ul className="flex gap-10 h-64">
+      <ul className="flex gap-10 h-72">
         <li>
           <CreateLink />
         </li>

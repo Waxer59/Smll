@@ -11,7 +11,7 @@ import { nanoid } from 'nanoid';
 import { Query, ID, Models } from 'node-appwrite';
 import { createAdminClient } from './appwrite';
 import { getLoggedInUser } from './appwrite-functions/auth';
-import bcrypt from 'bcrypt';
+import bcrypt, { compareSync } from 'bcrypt';
 import { isDateBefore } from '@/helpers/isDateBefore';
 import { isFutureDate } from '@/helpers/isFutureDate';
 import { z } from 'zod';
@@ -236,16 +236,19 @@ export async function createShortenedLink(
       success: true,
       errors: [],
       shortenedLink: {
-        ...(linkDocument as {
-          links: SingleLinkDetails[];
-          code: string;
-          tags: string[];
-          maxVisits: number;
-          activeAt: Date;
-          deleteAt: Date;
-        }),
         id: $id,
-        isEnabled: Boolean(link?.activeAt && link.activeAt > new Date()),
+        links: linkDocument.links.map(
+          ({ $id, url }: { $id: string; url: string }) => ({
+            id: $id,
+            url
+          })
+        ),
+        code: linkDocument.code,
+        tags: linkDocument.tags,
+        maxVisits: linkDocument.maxVisits,
+        activeAt: linkDocument.activeAt,
+        deleteAt: linkDocument.deleteAt,
+        isEnabled: true,
         originalLink: link.links[0].url,
         shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${uniqueCode}`,
         createdAt: new Date($createdAt),
@@ -260,4 +263,19 @@ export async function createShortenedLink(
   }
 
   return { success: false, errors: [], shortenedLink: null };
+}
+
+export async function getLinkByPassword(
+  links: SingleLinkDetails[],
+  password: string
+): Promise<string | null> {
+  const link = links.find(
+    (link) => link.password && compareSync(password, link.password)
+  );
+
+  if (!link) {
+    return null;
+  }
+
+  return link.url;
 }

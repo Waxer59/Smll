@@ -8,6 +8,7 @@ interface Props {
   onClose: () => void;
 }
 
+// TODO: Change QR and give the option to download it
 export const QrModal: React.FC<Props> = ({ title, isOpen, value, onClose }) => {
   return (
     <Modal opened={isOpen} onClose={onClose} radius="md" title={title}>

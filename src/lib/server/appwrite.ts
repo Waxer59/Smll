@@ -96,26 +96,28 @@ export async function getUserShortenedLinks(
         tags,
         activeAt,
         deleteAt,
-        links,
+        links: linksDocument,
         maxVisits,
         metrics
       }) => ({
         id: $id,
         code,
         isEnabled,
-        createdAt: $createdAt,
+        createdAt: new Date($createdAt),
         tags,
         activeAt,
         deleteAt,
-        links: links.map(({ $id, url }: { $id: string; url: string }) => ({
-          id: $id,
-          url
-        })),
+        links: linksDocument.map(
+          ({ $id, url }: { $id: string; url: string }) => ({
+            id: $id,
+            url
+          })
+        ),
         shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${code}`,
-        isProtectedByPassword: Boolean(links[0].password),
-        isSmartLink: Boolean(links.length > 1),
+        isProtectedByPassword: Boolean(linksDocument[0]?.password),
+        isSmartLink: Boolean(linksDocument.length > 1),
         maxVisits,
-        originalLink: links[0].url,
+        originalLink: linksDocument[0]?.url,
         metrics,
         clicks: 0
       })

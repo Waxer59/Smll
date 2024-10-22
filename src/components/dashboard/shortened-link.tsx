@@ -23,7 +23,7 @@ import {
   Trash
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUiStore } from '@/store/ui';
+import { useLinksStore } from '@/store/links';
 
 interface Props {
   link: LinkDetails;
@@ -43,8 +43,8 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
     isProtectedByPassword,
     isSmartLink
   } = link;
-  const setQrLinkId = useUiStore((state) => state.setQrLinkId);
-  const setEditLinkId = useUiStore((state) => state.setEditLinkId);
+  const setQrLinkId = useLinksStore((state) => state.setQrLinkId);
+  const setEditLinkId = useLinksStore((state) => state.setEditLinkId);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shortenedLink);
@@ -52,10 +52,13 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
   };
 
   return (
-    <Card radius="md" className="flex flex-col h-full gap-6">
+    <Card
+      radius="md"
+      padding="sm"
+      className="flex flex-col justify-center h-full gap-6 max-w-md overflow-auto link-card">
       <header className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          {isProtectedByPassword && (
+          {isProtectedByPassword && !isSmartLink && (
             <Tooltip label="Link is protected by password" color="gray">
               <Lock size={16} />
             </Tooltip>
@@ -65,7 +68,7 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
               <BrainCircuit size={16} />
             </Tooltip>
           )}
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center justify-between gap-3 w-full">
             <h3 className="text-2xl font-semibold max-w-[20ch] truncate">
               {originalLink}
             </h3>
@@ -147,10 +150,10 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
           </li>
         )}
       </ul>
-      <ul className="flex gap-1">
+      <ul className="flex flex-wrap gap-1">
         {tags?.map((tag) => (
           <li key={tag}>
-            <Badge>{tag}</Badge>
+            <Badge color="gray">{tag}</Badge>
           </li>
         ))}
       </ul>

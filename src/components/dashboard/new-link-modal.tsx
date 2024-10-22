@@ -10,9 +10,9 @@ import {
   TagsInput,
   Button
 } from '@mantine/core';
-import { DateTimePicker } from '@mantine/dates';
+import { DatePickerInput } from '@mantine/dates';
 import { Minus, Plus, MousePointerClick } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   CreateLinkDetails,
   LinkDetails,
@@ -65,9 +65,9 @@ export const NewLinkModal: React.FC<Props> = ({
       []
   );
   const [tags, setTags] = useState<string[]>(link?.tags ?? []);
-  const [expireDate, setExpireDate] = useState<Date | undefined>(undefined);
-  const [activeDate, setActiveDate] = useState<Date | undefined>(undefined);
-  const [maxClicks, setMaxClicks] = useState<number | undefined>(undefined);
+  const [expireDate, setExpireDate] = useState<Date | null>(null);
+  const [activeDate, setActiveDate] = useState<Date | null>(null);
+  const [maxClicks, setMaxClicks] = useState<number | null>(null);
   const [code, setCode] = useState<string>(link?.code ?? '');
   const isSmartPassword = smartLinks.length > 0;
 
@@ -105,24 +105,15 @@ export const NewLinkModal: React.FC<Props> = ({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target as HTMLFormElement);
-
-    const mainLink = formData.get('mainLink');
-    const mainPassword = formData.get('mainPassword');
-    const maxClicks = Number(formData.get('maxClicks'));
-    const code = formData.get('code');
-    const deleteAtRaw = formData.get('expires');
-    const activeAtRaw = formData.get('activeAt');
-
     let deleteAt: Date | undefined;
     let activeAt: Date | undefined;
 
-    if (deleteAtRaw) {
-      deleteAt = new Date(deleteAtRaw as string);
+    if (expireDate) {
+      deleteAt = expireDate;
     }
 
-    if (activeAtRaw) {
-      activeAt = new Date(activeAtRaw as string);
+    if (activeDate) {
+      activeAt = activeDate;
     }
 
     const { success, data } = formSchema.safeParse({
@@ -160,10 +151,24 @@ export const NewLinkModal: React.FC<Props> = ({
     setSmartLinks(smartLinks.filter((link) => link.id !== id));
   };
 
+  const resetForm = () => {
+    setMainLink('');
+    setMainPassword('');
+    setSmartLinks([]);
+    setTags([]);
+    setExpireDate(null);
+    setActiveDate(null);
+    setMaxClicks(null);
+    setCode('');
+  };
+
   return (
     <Modal
       opened={opened}
-      onClose={onClose}
+      onClose={() => {
+        resetForm();
+        onClose();
+      }}
       size="lg"
       title={isEditing ? 'Edit link' : 'Create new link'}
       radius="md">
@@ -273,7 +278,7 @@ export const NewLinkModal: React.FC<Props> = ({
             description="Link will be disabled after this number of clicks"
             className="flex-1"
             name="maxClicks"
-            value={maxClicks}
+            value={maxClicks ?? undefined}
             onChange={(value) => setMaxClicks(+value)}
             min={0}
             size="md"
@@ -281,7 +286,7 @@ export const NewLinkModal: React.FC<Props> = ({
           />
         </div>
         <div className="flex gap-2">
-          <DateTimePicker
+          <DatePickerInput
             label="Expires"
             clearable
             description="Link will expire from this date and time"
@@ -290,9 +295,9 @@ export const NewLinkModal: React.FC<Props> = ({
             size="md"
             radius="md"
             value={expireDate}
-            onChange={(date) => setExpireDate(date ?? undefined)}
+            onChange={setExpireDate}
           />
-          <DateTimePicker
+          <DatePickerInput
             label="Begins"
             clearable
             description="Link will be active from this date and time"
@@ -301,7 +306,7 @@ export const NewLinkModal: React.FC<Props> = ({
             size="md"
             radius="md"
             value={activeDate}
-            onChange={(date) => setActiveDate(date ?? undefined)}
+            onChange={setActiveDate}
           />
         </div>
         <TagsInput

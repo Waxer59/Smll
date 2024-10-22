@@ -89,6 +89,14 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #4b4848;
   }
+
+  .link-card::-webkit-scrollbar-thumb {
+    background: #4b4848;
+  }
+
+  .link-card::-webkit-scrollbar-thumb:hover {
+    background: #5e5a5a;
+  }
 }
 
 @supports not selector(::-webkit-scrollbar) {
