@@ -8,6 +8,7 @@ interface Props {
   links?: LinkDetails[];
 }
 
+// TODO: Responsive
 export const ShortenedLinks: React.FC<Props> = ({ tags, links }) => {
   return (
     <div className="flex flex-col items-start gap-10 mt-16">

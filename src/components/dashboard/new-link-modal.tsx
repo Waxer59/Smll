@@ -22,6 +22,7 @@ import { LONG_LINK_EXAMPLE } from '@/constants';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { isDateBefore } from '@/helpers/isDateBefore';
+import { useUiStore } from '@/store/ui';
 
 const formSchema = z.object({
   links: z.array(
@@ -58,6 +59,9 @@ export const NewLinkModal: React.FC<Props> = ({
   isEditing,
   link
 }) => {
+  const setIsNewLinkModalOpen = useUiStore(
+    (state) => state.setIsNewLinkModalOpen
+  );
   const [mainLink, setMainLink] = useState(link?.links[0].url ?? '');
   const [mainPassword, setMainPassword] = useState('');
   const [smartLinks, setSmartLinks] = useState<SmartLinkDetails[]>(
@@ -116,7 +120,7 @@ export const NewLinkModal: React.FC<Props> = ({
       activeAt = activeDate;
     }
 
-    const { success, data } = formSchema.safeParse({
+    const { success, data, error } = formSchema.safeParse({
       links: [
         {
           url: mainLink,
@@ -136,6 +140,7 @@ export const NewLinkModal: React.FC<Props> = ({
 
     if (!success) {
       toast.error('Please check all fields are correct.');
+      console.log(error);
       return;
     }
 
@@ -145,29 +150,19 @@ export const NewLinkModal: React.FC<Props> = ({
     }
 
     onSubmit(data);
+    setIsNewLinkModalOpen(false);
   };
 
   const removePasswordLink = (id: string) => {
     setSmartLinks(smartLinks.filter((link) => link.id !== id));
   };
 
-  const resetForm = () => {
-    setMainLink('');
-    setMainPassword('');
-    setSmartLinks([]);
-    setTags([]);
-    setExpireDate(null);
-    setActiveDate(null);
-    setMaxClicks(null);
-    setCode('');
-  };
-
   return (
     <Modal
       opened={opened}
       onClose={() => {
-        resetForm();
         onClose();
+        setIsNewLinkModalOpen(false);
       }}
       size="lg"
       title={isEditing ? 'Edit link' : 'Create new link'}

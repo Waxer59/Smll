@@ -2,11 +2,10 @@
 
 import { useLinksStore } from '@/store/links';
 import { QrModal } from './qr-modal';
-import { useAccountStore } from '@/store/account';
 import { NewLinkModal } from './new-link-modal';
 
 export const LinkModals = () => {
-  const links = useAccountStore((state) => state.links);
+  const links = useLinksStore((state) => state.links);
   const editLinkId = useLinksStore((state) => state.editLinkId);
   const setEditLinkId = useLinksStore((state) => state.setEditLinkId);
   const qrLinkId = useLinksStore((state) => state.qrLinkId);

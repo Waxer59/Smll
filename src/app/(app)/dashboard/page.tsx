@@ -2,10 +2,10 @@
 
 import { ShortenedLinks } from '@/components/dashboard/shortened-links';
 import { LinksStats } from '@/components/dashboard/links-stats';
-import { useAccountStore } from '@/store/account';
+import { useLinksStore } from '@/store/links';
 
 export default function Page() {
-  const links = useAccountStore((state) => state.links);
+  const links = useLinksStore((state) => state.links);
   const activeLinks = links.filter((link) => link.isEnabled).length;
 
   return (

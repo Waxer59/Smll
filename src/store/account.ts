@@ -5,7 +5,6 @@ import { devtools } from 'zustand/middleware';
 interface State {
   name: string;
   email: string;
-  links: LinkDetails[];
   tokens: TokenDetails[];
   hasEmailVerification: boolean;
   hasMFA: boolean;
@@ -21,8 +20,6 @@ interface Actions {
   addToken: (token: TokenDetails) => void;
   deleteToken: (token: string) => void;
   setHasMFA: (hasMFA: boolean) => void;
-  setLinks: (links: LinkDetails[]) => void;
-  addLink: (link: LinkDetails) => void;
   clear(): void;
 }
 
@@ -32,7 +29,6 @@ const initialState: State = {
   hasMFA: false,
   isPasswordlessAccount: false,
   hasEmailVerification: true,
-  links: [],
   tokens: []
 };
 
@@ -45,11 +41,6 @@ export const useAccountStore = create<State & Actions>()(
       set({ isPasswordlessAccount }),
     setHasEmailVerification: (hasEmailVerification) =>
       set({ hasEmailVerification }),
-    setLinks: (links) => set({ links }),
-    addLink: (link) =>
-      set((state) => ({
-        links: [...state.links, link]
-      })),
     setHasMFA: (hasMFA) => set({ hasMFA }),
     setTokens: (tokens) => set({ tokens }),
     addToken: (token) =>

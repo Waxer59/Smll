@@ -6,15 +6,21 @@ import { NewLinkModal } from './new-link-modal';
 import { useState } from 'react';
 import { type CreateLinkDetails } from '@/types';
 import { toast } from 'sonner';
-import { useAccountStore } from '@/store/account';
+import { useLinksStore } from '@/store/links';
+import { useUiStore } from '@/store/ui';
 
 export const CreateLink = () => {
-  const addLink = useAccountStore((state) => state.addLink);
+  const isNewLinkModalOpen = useUiStore((state) => state.isNewLinkModalOpen);
+  const setIsNewLinkModalOpen = useUiStore(
+    (state) => state.setIsNewLinkModalOpen
+  );
+  const addLink = useLinksStore((state) => state.addLink);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoadingCreation, setisLoadingCreation] = useState(false);
+  const [isLoadingCreation, setIsLoadingCreation] = useState(false);
 
   const handleCreateNewLink = async (createLink: CreateLinkDetails) => {
-    setisLoadingCreation(true);
+    setIsLoadingCreation(true);
+    setIsNewLinkModalOpen(true);
 
     try {
       const response = await fetch('/api/link', {
@@ -37,7 +43,7 @@ export const CreateLink = () => {
       toast.error('Failed to create link.');
       console.log(error);
     } finally {
-      setisLoadingCreation(false);
+      setIsLoadingCreation(false);
     }
   };
 
@@ -57,14 +63,16 @@ export const CreateLink = () => {
           <h3 className="text-xl">Create new link</h3>
         </div>
       </Button>
-      <NewLinkModal
-        opened={isModalOpen}
-        onSubmit={handleCreateNewLink}
-        isLoadingCreation={isLoadingCreation}
-        onClose={() => {
-          setIsModalOpen(false);
-        }}
-      />
+      {isNewLinkModalOpen && (
+        <NewLinkModal
+          opened={isModalOpen}
+          onSubmit={handleCreateNewLink}
+          isLoadingCreation={isLoadingCreation}
+          onClose={() => {
+            setIsModalOpen(false);
+          }}
+        />
+      )}
     </>
   );
 };

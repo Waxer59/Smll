@@ -33,7 +33,7 @@
     "node-appwrite": "14.1.0",
     "react": "18",
     "react-dom": "18",
-    "react-qr-code": "2.0.15",
+    "react-qrcode-logo": "^3.0.0",
     "react-spring": "9.7.4",
     "recharts": "2",
     "sonner": "1.5.0",

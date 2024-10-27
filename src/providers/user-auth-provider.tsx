@@ -12,15 +12,19 @@ import {
   getUserAccountSession
 } from '@/lib/server/appwrite-functions/auth';
 import { useAccountStore } from '@/store/account';
+import { useLinksStore } from '@/store/links';
+import { LinkDetails, RequireMFA, TokenDetails } from '@/types';
 import { useRouter } from 'next/navigation';
+import { Models } from 'appwrite';
 import React, { useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface Props {
   children: React.ReactNode;
 }
 
 export const UserAuthProvider: React.FC<Props> = ({ children }) => {
-  const setLinks = useAccountStore((state) => state.setLinks);
+  const setLinks = useLinksStore((state) => state.setLinks);
   const setName = useAccountStore((state) => state.setName);
   const setEmail = useAccountStore((state) => state.setEmail);
   const setHasEmailVerification = useAccountStore(
@@ -38,36 +42,48 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
     const hasVerifiedEmail = url.searchParams.get('verified') === 'true';
 
     async function initAccountStore() {
-      const user = await getLoggedInUser();
+      const userData: [
+        Promise<Promise<Models.User<Models.Preferences>> | RequireMFA | null>,
+        Promise<LinkDetails[] | null>,
+        Promise<TokenDetails[] | null>,
+        Promise<Models.Session | null>
+      ] = [
+        getLoggedInUser(),
+        getUserShortenedLinks(),
+        getUserTokens(),
+        getUserAccountSession()
+      ];
 
-      if (!user) {
-        router.push('/');
-        return;
-      } else if (user === 'MFA') {
-        router.push('/mfa');
+      try {
+        const resolvedUserData = await Promise.all(userData);
+        const [user, accountLinks, accountTokens, userAccountSession] =
+          resolvedUserData;
+
+        if (!user) {
+          router.push('/');
+          return;
+        } else if (user === 'MFA') {
+          router.push('/mfa');
+          return;
+        } else if (!userAccountSession) {
+          router.push('/');
+          return;
+        }
+
+        setName(user.name);
+        setHasMFA(user.mfa);
+        setEmail(user.email);
+        setHasEmailVerification(user.emailVerification);
+        setLinks(accountLinks ?? []);
+        setTokens(accountTokens ?? []);
+        setIsPasswordlessAccount(
+          userAccountSession.provider === APPWRITE_PROVIDERS.oauth2 ||
+            userAccountSession.provider === APPWRITE_PROVIDERS.magicUrl
+        );
+      } catch (error) {
+        toast.error('There was an error while loading your account.');
         return;
       }
-
-      const userAccountSession = await getUserAccountSession();
-
-      if (!userAccountSession) {
-        router.push('/');
-        return;
-      }
-
-      const accountLinks = await getUserShortenedLinks();
-      const accountTokens = await getUserTokens();
-
-      setLinks(accountLinks ?? []);
-      setName(user.name);
-      setHasMFA(user.mfa);
-      setEmail(user.email);
-      setHasEmailVerification(user.emailVerification);
-      setTokens(accountTokens ?? []);
-      setIsPasswordlessAccount(
-        userAccountSession.provider === APPWRITE_PROVIDERS.oauth2 ||
-          userAccountSession.provider === APPWRITE_PROVIDERS.magicUrl
-      );
     }
 
     initAccountStore();
