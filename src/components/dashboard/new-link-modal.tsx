@@ -22,7 +22,6 @@ import { LONG_LINK_EXAMPLE } from '@/constants';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { isDateBefore } from '@/helpers/isDateBefore';
-import { useUiStore } from '@/store/ui';
 
 const formSchema = z.object({
   links: z.array(
@@ -59,9 +58,6 @@ export const NewLinkModal: React.FC<Props> = ({
   isEditing,
   link
 }) => {
-  const setIsNewLinkModalOpen = useUiStore(
-    (state) => state.setIsNewLinkModalOpen
-  );
   const [mainLink, setMainLink] = useState(link?.links[0].url ?? '');
   const [mainPassword, setMainPassword] = useState('');
   const [smartLinks, setSmartLinks] = useState<SmartLinkDetails[]>(
@@ -131,7 +127,7 @@ export const NewLinkModal: React.FC<Props> = ({
           password: link.password
         }))
       ],
-      maxVisits: maxClicks === 0 ? undefined : maxClicks,
+      maxVisits: maxClicks === 0 || maxClicks === null ? undefined : maxClicks,
       activeAt,
       deleteAt,
       code,
@@ -150,7 +146,6 @@ export const NewLinkModal: React.FC<Props> = ({
     }
 
     onSubmit(data);
-    setIsNewLinkModalOpen(false);
   };
 
   const removePasswordLink = (id: string) => {
@@ -162,7 +157,6 @@ export const NewLinkModal: React.FC<Props> = ({
       opened={opened}
       onClose={() => {
         onClose();
-        setIsNewLinkModalOpen(false);
       }}
       size="lg"
       title={isEditing ? 'Edit link' : 'Create new link'}

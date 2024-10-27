@@ -7,20 +7,15 @@ import { useState } from 'react';
 import { type CreateLinkDetails } from '@/types';
 import { toast } from 'sonner';
 import { useLinksStore } from '@/store/links';
-import { useUiStore } from '@/store/ui';
 
 export const CreateLink = () => {
-  const isNewLinkModalOpen = useUiStore((state) => state.isNewLinkModalOpen);
-  const setIsNewLinkModalOpen = useUiStore(
-    (state) => state.setIsNewLinkModalOpen
-  );
   const addLink = useLinksStore((state) => state.addLink);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoadingCreation, setIsLoadingCreation] = useState(false);
 
   const handleCreateNewLink = async (createLink: CreateLinkDetails) => {
     setIsLoadingCreation(true);
-    setIsNewLinkModalOpen(true);
+    setIsModalOpen(true);
 
     try {
       const response = await fetch('/api/link', {
@@ -63,7 +58,7 @@ export const CreateLink = () => {
           <h3 className="text-xl">Create new link</h3>
         </div>
       </Button>
-      {isNewLinkModalOpen && (
+      {isModalOpen && (
         <NewLinkModal
           opened={isModalOpen}
           onSubmit={handleCreateNewLink}
