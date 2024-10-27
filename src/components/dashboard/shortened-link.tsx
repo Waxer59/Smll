@@ -54,29 +54,26 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
   };
 
   const handleDeleteLink = async () => {
-    try {
-      const resp = await fetch(`/api/link/${id}`, {
+    toast.promise(
+      fetch(`/api/link/${id}`, {
         method: 'DELETE'
-      });
-
-      console.log(resp.ok);
-
-      if (resp.ok) {
-        removeLinkById(id);
-        toast.success('Link deleted successfully.');
-      } else {
-        toast.error('Failed to delete link.');
+      }),
+      {
+        loading: 'Deleting link...',
+        success: () => {
+          removeLinkById(id);
+          return 'Link deleted successfully.';
+        },
+        error: 'Failed to delete link.'
       }
-    } catch (error) {
-      toast.error('Failed to delete link.');
-    }
+    );
   };
 
   return (
     <Card
       radius="md"
       padding="sm"
-      className="flex flex-col justify-center h-full gap-6 max-w-md overflow-auto link-card">
+      className="flex flex-col justify-center h-full gap-6 overflow-auto link-card w-full">
       <header className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
           {isProtectedByPassword && !isSmartLink && (

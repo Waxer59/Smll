@@ -51,7 +51,7 @@ export const CreateLink = () => {
       <Button
         radius="md"
         color="dark"
-        className="h-full w-52"
+        className="h-full w-full"
         onClick={handleOpenModal}>
         <div className="flex flex-col items-center justify-center gap-6">
           <Plus size={48} />
