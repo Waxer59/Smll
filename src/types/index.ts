@@ -42,3 +42,12 @@ export interface TokenDetails {
 }
 
 export type RequireMFA = 'MFA';
+
+export interface OperationResult {
+  success: boolean;
+  errors: string[];
+}
+
+export interface LinkOperationResult extends OperationResult {
+  shortenedLink: LinkDetails | null;
+}

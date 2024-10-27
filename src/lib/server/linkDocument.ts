@@ -6,7 +6,13 @@ import {
   SALT_ROUNDS
 } from '@/constants';
 import { areAllLinksPasswordsUnique } from '@/helpers/areAllLinksPasswordsUnique';
-import { CreateLinkDetails, LinkDetails, SingleLinkDetails } from '@/types';
+import {
+  CreateLinkDetails,
+  LinkDetails,
+  LinkOperationResult,
+  OperationResult,
+  SingleLinkDetails
+} from '@/types';
 import { nanoid } from 'nanoid';
 import { Query, ID, Models } from 'node-appwrite';
 import { createAdminClient } from './appwrite';
@@ -50,10 +56,7 @@ export async function createUniqueLinkCode(
   return isAvailable ? code : createUniqueLinkCode(length + 1);
 }
 
-export function isLinkCorrect(link: CreateLinkDetails): {
-  success: boolean;
-  errors: string[];
-} {
+export function isLinkCorrect(link: CreateLinkDetails): OperationResult {
   const errors: string[] = [];
 
   // Password must be at least 1 character
@@ -144,14 +147,34 @@ export async function getShortenedLinkByCode(
   return null;
 }
 
+export async function getShortenedLinkById(
+  id: string
+): Promise<Models.Document | null> {
+  const { database } = await createAdminClient();
+
+  try {
+    const link = await database.getDocument(
+      APPWRITE_DATABASES.link_shortener,
+      APPWRITE_COLLECTIONS.shortened_links,
+      id
+    );
+
+    if (!link) {
+      return null;
+    }
+
+    return link;
+  } catch (error) {
+    console.log(error);
+  }
+
+  return null;
+}
+
 export async function createShortenedLink(
   link: CreateLinkDetails,
   userId?: string
-): Promise<{
-  success: boolean;
-  errors: string[];
-  shortenedLink: LinkDetails | null;
-}> {
+): Promise<LinkOperationResult> {
   if (!userId) {
     const user = await getLoggedInUser();
 
@@ -278,4 +301,44 @@ export async function getLinkByPassword(
   }
 
   return link.url;
+}
+
+export async function deleteLinkById(
+  linkId: string,
+  userId?: string
+): Promise<OperationResult> {
+  if (!userId) {
+    const user = await getLoggedInUser();
+
+    if (!user || user === 'MFA') {
+      return {
+        success: false,
+        errors: ['You must be logged in to create a link or use a token.']
+      };
+    }
+
+    userId = user.$id;
+  }
+
+  const { database } = await createAdminClient();
+
+  // Check if the link belongs to the user
+  const link = await getShortenedLinkById(linkId);
+
+  if (!link || link.creatorId !== userId) {
+    return { success: false, errors: ['Link not found.'] };
+  }
+
+  try {
+    await database.deleteDocument(
+      APPWRITE_DATABASES.link_shortener,
+      APPWRITE_COLLECTIONS.shortened_links,
+      linkId
+    );
+  } catch (error) {
+    console.log(error);
+    return { success: false, errors: ['Failed to delete link.'] };
+  }
+
+  return { success: true, errors: [] };
 }

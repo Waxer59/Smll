@@ -31,6 +31,7 @@ interface Props {
 
 export const ShortenedLink: React.FC<Props> = ({ link }) => {
   const {
+    id,
     originalLink,
     shortenedLink,
     createdAt,
@@ -43,12 +44,32 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
     isProtectedByPassword,
     isSmartLink
   } = link;
+  const removeLinkById = useLinksStore((state) => state.removeLinkById);
   const setQrLinkId = useLinksStore((state) => state.setQrLinkId);
   const setEditLinkId = useLinksStore((state) => state.setEditLinkId);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shortenedLink);
     toast.success('Link copied to clipboard.');
+  };
+
+  const handleDeleteLink = async () => {
+    try {
+      const resp = await fetch(`/api/link/${id}`, {
+        method: 'DELETE'
+      });
+
+      console.log(resp.ok);
+
+      if (resp.ok) {
+        removeLinkById(id);
+        toast.success('Link deleted successfully.');
+      } else {
+        toast.error('Failed to delete link.');
+      }
+    } catch (error) {
+      toast.error('Failed to delete link.');
+    }
   };
 
   return (
@@ -94,7 +115,10 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="Delete link" color="gray">
-                <ActionIcon color="subtle" variant="subtle" onClick={() => {}}>
+                <ActionIcon
+                  color="subtle"
+                  variant="subtle"
+                  onClick={handleDeleteLink}>
                   <VisuallyHidden>Delete Link</VisuallyHidden>
                   <Trash size={16} />
                 </ActionIcon>
