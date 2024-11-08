@@ -50,7 +50,7 @@ export default function AuthLayout({
   return (
     <div
       id={MODAL_ID}
-      className={`z-10 fixed top-0 w-full h-full flex flex-col items-center justify-center before:absolute before:w-full before:h-full before:${isPreviousPathnameRoot ? 'bg-background/50' : 'bg-background'} before:z-0 before:top-0 before:left-0 before:blur-md`}>
+      className={`z-10 fixed top-0 w-full h-full flex flex-col items-center justify-center before:absolute before:w-full before:h-full before:bg-background/50 before:${isPreviousPathnameRoot ? 'bg-background/50' : 'bg-background'} before:z-0 before:top-0 before:left-0 before:blur-md`}>
       {children}
     </div>
   );

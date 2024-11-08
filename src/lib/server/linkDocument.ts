@@ -5,22 +5,17 @@ import {
   APPWRITE_COLLECTIONS,
   SALT_ROUNDS
 } from '@/constants';
-import { areAllLinksPasswordsUnique } from '@/helpers/areAllLinksPasswordsUnique';
 import {
   CreateLinkDetails,
-  LinkDetails,
   LinkOperationResult,
-  OperationResult,
-  SingleLinkDetails
+  OperationResult
 } from '@/types';
 import { nanoid } from 'nanoid';
 import { Query, ID, Models } from 'node-appwrite';
 import { createAdminClient } from './appwrite';
 import { getLoggedInUser } from './appwrite-functions/auth';
-import bcrypt, { compareSync } from 'bcrypt';
-import { isDateBefore } from '@/helpers/isDateBefore';
-import { isFutureDate } from '@/helpers/isFutureDate';
-import { z } from 'zod';
+import bcrypt from 'bcrypt';
+import { isLinkCorrect } from '@/helpers/isLinkCorrect';
 
 const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -56,73 +51,6 @@ export async function createUniqueLinkCode(
   return isAvailable ? code : createUniqueLinkCode(length + 1);
 }
 
-export function isLinkCorrect(link: CreateLinkDetails): OperationResult {
-  const errors: string[] = [];
-
-  // Password must be at least 1 character
-  if (
-    link.links.some((l) => (l.password ? l.password.trim().length < 1 : false))
-  ) {
-    errors.push('Password must be at least 1 character.');
-  }
-
-  // Links must be valid urls
-  if (
-    link.links.some((link) => {
-      const urlSchema = z.string().url();
-      return !urlSchema.safeParse(link.url).success;
-    })
-  ) {
-    errors.push('Links must be valid urls.');
-  }
-
-  // Expire date must be before active date
-  if (
-    link.activeAt &&
-    link.deleteAt &&
-    isDateBefore(link.deleteAt, link.activeAt)
-  ) {
-    errors.push('Expire date must be before active date.');
-  }
-
-  // Max clicks must be greater than 0
-  if (link.maxVisits !== undefined && link.maxVisits < 1) {
-    errors.push('Max visits must be greater than 0.');
-  }
-
-  // A tag must be at least 1 character
-  if (link.tags && link.tags.some((tag) => tag.trim().length < 1)) {
-    errors.push('A tag must be at least 1 character.');
-  }
-
-  // Dates must be in the future
-  if (link.activeAt && !isFutureDate(link.activeAt)) {
-    errors.push('Active date must be in the future.');
-  }
-
-  if (link.deleteAt && !isFutureDate(link.deleteAt)) {
-    errors.push('Expire date must be in the future.');
-  }
-
-  // If one link have password, then all links must have password
-  const havePassword = link.links.some((link) => link.password);
-  const haveAllLinksPasswords = link.links.every((link) => link.password);
-
-  if (havePassword && !haveAllLinksPasswords) {
-    errors.push(
-      'If one link have password, then all links must have password.'
-    );
-  }
-
-  const areAllPasswordsUnique = areAllLinksPasswordsUnique(link.links);
-
-  if (!areAllPasswordsUnique) {
-    errors.push('All links passwords must be unique.');
-  }
-
-  return { success: errors.length === 0, errors };
-}
-
 export async function getShortenedLinkByCode(
   code: string
 ): Promise<Models.Document | null> {
@@ -148,8 +76,19 @@ export async function getShortenedLinkByCode(
 }
 
 export async function getShortenedLinkById(
-  id: string
+  id: string,
+  userId?: string
 ): Promise<Models.Document | null> {
+  if (!userId) {
+    const user = await getLoggedInUser();
+
+    if (!user || user === 'MFA') {
+      return null;
+    }
+
+    userId = user.$id;
+  }
+
   const { database } = await createAdminClient();
 
   try {
@@ -288,21 +227,6 @@ export async function createShortenedLink(
   return { success: false, errors: [], shortenedLink: null };
 }
 
-export async function getLinkByPassword(
-  links: SingleLinkDetails[],
-  password: string
-): Promise<string | null> {
-  const link = links.find(
-    (link) => link.password && compareSync(password, link.password)
-  );
-
-  if (!link) {
-    return null;
-  }
-
-  return link.url;
-}
-
 export async function deleteLinkById(
   linkId: string,
   userId?: string
@@ -323,9 +247,9 @@ export async function deleteLinkById(
   const { database } = await createAdminClient();
 
   // Check if the link belongs to the user
-  const link = await getShortenedLinkById(linkId);
+  const link = await getShortenedLinkById(linkId, userId);
 
-  if (!link || link.creatorId !== userId) {
+  if (!link) {
     return { success: false, errors: ['Link not found.'] };
   }
 
@@ -338,6 +262,60 @@ export async function deleteLinkById(
   } catch (error) {
     console.log(error);
     return { success: false, errors: ['Failed to delete link.'] };
+  }
+
+  return { success: true, errors: [] };
+}
+
+export async function editLinkById(
+  linkId: string,
+  link: Partial<CreateLinkDetails>,
+  userId?: string
+): Promise<OperationResult> {
+  if (!userId) {
+    const user = await getLoggedInUser();
+
+    if (!user || user === 'MFA') {
+      return {
+        success: false,
+        errors: ['You must be logged in to create a link or use a token.']
+      };
+    }
+
+    userId = user.$id;
+  }
+
+  const { database } = await createAdminClient();
+
+  // Check if the link belongs to the user
+  const linkDocument = await getShortenedLinkById(linkId, userId);
+
+  if (!linkDocument) {
+    return { success: false, errors: ['Link not found.'] };
+  }
+
+  try {
+    await database.updateDocument(
+      APPWRITE_DATABASES.link_shortener,
+      APPWRITE_COLLECTIONS.shortened_links,
+      linkId,
+      {
+        links: link?.links?.map((link) => {
+          if (link.password) {
+            link.password = bcrypt.hashSync(link.password, SALT_ROUNDS);
+          }
+
+          return link;
+        }),
+        tags: link.tags,
+        maxVisits: link.maxVisits,
+        activeAt: link.activeAt,
+        deleteAt: link.deleteAt
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    return { success: false, errors: ['Failed to update link.'] };
   }
 
   return { success: true, errors: [] };

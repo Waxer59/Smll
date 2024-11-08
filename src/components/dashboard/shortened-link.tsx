@@ -125,7 +125,7 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
         </div>
         <h3 className="text-sm text-gray-400">{shortenedLink}</h3>
       </header>
-      <ul className="flex gap-10 items-center">
+      <ul className="flex gap-10 items-center justify-between">
         <li className="flex items-center gap-2">
           <Calendar size={16} />
           <span>

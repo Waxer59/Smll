@@ -1,6 +1,8 @@
 import { PasswordProtection } from '@/components/password-protection';
 import { getShortenedLinkByCode } from '@/lib/server/linkDocument';
 import { notFound, redirect, RedirectType } from 'next/navigation';
+import { createMetric } from '@/lib/server/metricsDocument';
+import { headers } from 'next/headers';
 
 export default async function Page({
   params: { code }
@@ -8,6 +10,7 @@ export default async function Page({
   params: { code: string };
 }) {
   const link = await getShortenedLinkByCode(code);
+  const city = headers().get('X-Vercel-IP-City') ?? 'Unknown';
 
   if (!link) {
     notFound();
@@ -19,6 +22,10 @@ export default async function Page({
 
   if (!isActive || isExpired || !link.isEnabled) {
     notFound();
+  }
+
+  if (link.metrics && link.metrics.length === 0) {
+    createMetric(link.id, city);
   }
 
   if (!havePassword) {
