@@ -1,20 +1,46 @@
 import { shortenedLinkSchema } from '@/constants/schemas';
+import { getJwtFromHeader } from '@/helpers/getJwtFromHeader';
 import { getUserIdFromJWT } from '@/helpers/getUserIdFromJWT';
-import { createShortenedLink } from '@/lib/server/linkDocument';
+import {
+  createShortenedLink,
+  getAllShortenedLinksForUser
+} from '@/lib/server/linkDocument';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+
+interface Params {
+  params: {
+    linkId: string;
+  };
+}
 
 const requestSchema = z.object({
   link: shortenedLinkSchema
 });
 
-// TODO: Implement GET all links method
-export async function GET(request: NextRequest) {}
+export async function GET(request: NextRequest) {
+  const bearerToken = getJwtFromHeader(request.headers.get('authorization'));
+  let userId;
+
+  if (bearerToken) {
+    userId = getUserIdFromJWT(bearerToken) ?? undefined;
+  }
+
+  if (!userId) {
+    return NextResponse.json(
+      { error: 'You must be logged in to access this endpoint.' },
+      { status: 401 }
+    );
+  }
+
+  return NextResponse.json({
+    links: await getAllShortenedLinksForUser(userId)
+  });
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const bearerToken = request.headers.get('authorization')?.split(' ')[1];
-  console.log(bearerToken);
+  const bearerToken = getJwtFromHeader(request.headers.get('authorization'));
   let userId;
 
   if (bearerToken) {

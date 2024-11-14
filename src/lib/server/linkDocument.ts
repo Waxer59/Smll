@@ -75,6 +75,24 @@ export async function getShortenedLinkByCode(
   return null;
 }
 
+export async function getAllShortenedLinksForUser(
+  userId: string
+): Promise<Models.Document[]> {
+  const { database } = await createAdminClient();
+
+  try {
+    const links = await database.listDocuments(
+      APPWRITE_DATABASES.link_shortener,
+      APPWRITE_COLLECTIONS.shortened_links,
+      [Query.equal('creatorId', userId)]
+    );
+
+    return links.documents;
+  } catch (error) {
+    return [];
+  }
+}
+
 export async function getShortenedLinkById(
   id: string,
   userId?: string
