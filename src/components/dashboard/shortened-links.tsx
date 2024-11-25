@@ -2,6 +2,7 @@ import { MultiSelect } from '@mantine/core';
 import { ShortenedLink } from './shortened-link';
 import { LinkDetails } from '@/types';
 import { CreateLink } from './create-link';
+import { useState } from 'react';
 
 interface Props {
   tags?: string[];
@@ -9,6 +10,16 @@ interface Props {
 }
 
 export const ShortenedLinks: React.FC<Props> = ({ tags, links }) => {
+  const [filterTags, setFilterTags] = useState<string[]>([]);
+
+  const filteredLinks = links?.filter((link) => {
+    if (filterTags.length === 0) {
+      return true;
+    }
+
+    return filterTags.some((tag) => link.tags.includes(tag));
+  });
+
   return (
     <div className="flex flex-col items-start gap-10 mt-16">
       <div className="flex items-center justify-between w-full">
@@ -25,7 +36,7 @@ export const ShortenedLinks: React.FC<Props> = ({ tags, links }) => {
         <li className="h-72 flex-1 md:max-w-[300px]">
           <CreateLink />
         </li>
-        {links?.map((link) => (
+        {filteredLinks?.map((link) => (
           <li key={link.id} className="h-72 w-full md:flex-1 md:max-w-lg">
             <ShortenedLink link={link} />
           </li>
