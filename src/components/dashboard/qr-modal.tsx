@@ -4,7 +4,6 @@ import { ActionIcon, Modal, Tooltip, VisuallyHidden } from '@mantine/core';
 import { Download } from 'lucide-react';
 import { useRef } from 'react';
 import { QRCode } from 'react-qrcode-logo';
-import QrCode from 'react-qr-code';
 
 interface Props {
   title: string;
@@ -14,12 +13,14 @@ interface Props {
 }
 
 export const QrModal: React.FC<Props> = ({ title, isOpen, value, onClose }) => {
-  const qrRef = useRef<QrCode>(null);
+  const qrRef = useRef<QRCode>(null);
 
   const handleDownload = () => {
+    if (!qrRef.current) return;
+
     const qrElement = qrRef.current;
 
-    qrElement.download('png', 'qr.png');
+    qrElement.download('png', `${title}-qr.png`);
   };
 
   return (
