@@ -10,6 +10,7 @@ interface Props {
 }
 
 export const ShortenedLinks: React.FC<Props> = ({ tags, links }) => {
+  const linksTags = links?.map((link) => link.tags).flat();
   const [filterTags, setFilterTags] = useState<string[]>([]);
 
   const filteredLinks = links?.filter((link) => {
@@ -29,7 +30,8 @@ export const ShortenedLinks: React.FC<Props> = ({ tags, links }) => {
           radius="md"
           label="Filter by tag"
           className="w-52"
-          data={tags}
+          data={linksTags}
+          onChange={setFilterTags}
         />
       </div>
       <ul className="flex flex-wrap gap-10 w-full">
