@@ -14,12 +14,14 @@ export const shortenedLinkSchema = z.object({
 });
 
 export const editShortenedLinkSchema = z.object({
-  links: z.array(
-    z.object({
-      url: z.string().url(),
-      password: z.string().optional()
-    })
-  ),
+  links: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        password: z.string().optional()
+      })
+    )
+    .optional(),
   deleteAt: z.date().optional(),
   activeAt: z.date().optional(),
   maxVisits: z.number().optional(),

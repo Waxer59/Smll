@@ -1,3 +1,5 @@
+'use server';
+
 import {
   SHORT_ID_INITIAL_LENGTH,
   SHORT_ID_MAX_LENGTH,
@@ -8,7 +10,8 @@ import {
 import {
   CreateLinkDetails,
   LinkOperationResult,
-  OperationResult
+  OperationResult,
+  UpdateLinkDetails
 } from '@/types';
 import { nanoid } from 'nanoid';
 import { Query, ID, Models } from 'node-appwrite';
@@ -287,7 +290,7 @@ export async function deleteLinkById(
 
 export async function editLinkById(
   linkId: string,
-  link: Partial<CreateLinkDetails>,
+  link: UpdateLinkDetails,
   userId?: string
 ): Promise<OperationResult> {
   if (!userId) {
@@ -328,7 +331,8 @@ export async function editLinkById(
         tags: link.tags,
         maxVisits: link.maxVisits,
         activeAt: link.activeAt,
-        deleteAt: link.deleteAt
+        deleteAt: link.deleteAt,
+        isEnabled: link.isEnabled
       }
     );
   } catch (error) {

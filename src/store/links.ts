@@ -15,6 +15,7 @@ interface Actions {
   setEditLinkId: (editLinkId: string | null) => void;
   setQrLinkId: (qrLinkId: string | null) => void;
   setLinks: (links: LinkDetails[]) => void;
+  editLinkById: (linkId: string, link: Partial<LinkDetails>) => void;
   addLink: (link: LinkDetails) => void;
   removeLinkById: (linkId: string) => void;
   clear(): void;
@@ -36,6 +37,17 @@ export const useLinksStore = create<State & Actions>()(
     addTag: (tag) => set({ tags: [...get().tags, tag] }),
     clear: () => set(initialState),
     setLinks: (links) => set({ links }),
+    editLinkById: (linkId, editedLink) =>
+      set((state) => ({
+        links: state.links.map((link) =>
+          link.id === linkId
+            ? {
+                ...link,
+                ...editedLink
+              }
+            : link
+        )
+      })),
     removeLinkById: (linkId) =>
       set((state) => ({
         links: state.links.filter((link) => link.id !== linkId)

@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLinksStore } from '@/store/links';
+import { editLinkById } from '@/lib/server/linkDocument';
+import { useState } from 'react';
 
 interface Props {
   link: LinkDetails;
@@ -44,16 +46,40 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
     isProtectedByPassword,
     isSmartLink
   } = link;
+  const [isUpdatingLink, setIsUpdatingLink] = useState(false);
   const removeLinkById = useLinksStore((state) => state.removeLinkById);
   const setQrLinkId = useLinksStore((state) => state.setQrLinkId);
   const setEditLinkId = useLinksStore((state) => state.setEditLinkId);
+  const editLinkByIdStore = useLinksStore((state) => state.editLinkById);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shortenedLink);
     toast.success('Link copied to clipboard.');
   };
 
+  const handleEnableLink = () => {
+    const newLink = {
+      isEnabled: !isEnabled
+    };
+
+    editLinkByIdStore(id, newLink);
+
+    setIsUpdatingLink(true);
+    toast.promise(editLinkById(id, newLink), {
+      loading: `${isEnabled ? 'Disabling' : 'Enabling'} link...`,
+      success: () => {
+        setIsUpdatingLink(false);
+        return `Link ${isEnabled ? 'disabled' : 'enabled'} successfully.`;
+      },
+      error: () => {
+        setIsUpdatingLink(false);
+        return `Error ${isEnabled ? 'disabling' : 'enabling'} link.`;
+      }
+    });
+  };
+
   const handleDeleteLink = async () => {
+    setIsUpdatingLink(true);
     toast.promise(
       fetch(`/api/link/${id}`, {
         method: 'DELETE'
@@ -106,6 +132,7 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
                 <ActionIcon
                   color="subtle"
                   variant="subtle"
+                  disabled={isUpdatingLink}
                   onClick={() => setEditLinkId(link.id)}>
                   <VisuallyHidden>Edit Link</VisuallyHidden>
                   <Settings size={16} />
@@ -115,6 +142,7 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
                 <ActionIcon
                   color="subtle"
                   variant="subtle"
+                  disabled={isUpdatingLink}
                   onClick={handleDeleteLink}>
                   <VisuallyHidden>Delete Link</VisuallyHidden>
                   <Trash size={16} />
@@ -201,6 +229,8 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
             variant={isEnabled ? 'light' : 'subtle'}
             color="gray"
             className="text-base"
+            disabled={isUpdatingLink}
+            onClick={handleEnableLink}
             leftSection={
               isEnabled ? <ToggleRight size={16} /> : <ToggleLeft size={16} />
             }>

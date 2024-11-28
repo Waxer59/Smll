@@ -9,6 +9,10 @@ export interface MetricsDetails {
   countries: string[];
 }
 
+export interface UpdateLinkDetails extends Partial<CreateLinkDetails> {
+  isEnabled?: boolean;
+}
+
 export interface CreateLinkDetails {
   links: SingleLinkDetails[];
   deleteAt?: Date;
