@@ -62,18 +62,18 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
       isEnabled: !isEnabled
     };
 
-    editLinkByIdStore(id, newLink);
-
     setIsUpdatingLink(true);
     toast.promise(editLinkById(id, newLink), {
-      loading: `${isEnabled ? 'Disabling' : 'Enabling'} link...`,
+      loading: `${!isEnabled ? 'Disabling' : 'Enabling'} link...`,
       success: () => {
         setIsUpdatingLink(false);
-        return `Link ${isEnabled ? 'disabled' : 'enabled'} successfully.`;
+        editLinkByIdStore(id, newLink);
+        return `Link ${!isEnabled ? 'disabled' : 'enabled'} successfully.`;
       },
       error: () => {
         setIsUpdatingLink(false);
-        return `Error ${isEnabled ? 'disabling' : 'enabling'} link.`;
+        editLinkByIdStore(id, newLink);
+        return `Error ${!isEnabled ? 'disabling' : 'enabling'} link.`;
       }
     });
   };
