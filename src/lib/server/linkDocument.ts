@@ -311,8 +311,13 @@ export async function editLinkById(
   // Check if the link belongs to the user
   const linkDocument = await getShortenedLinkById(linkId, userId);
 
-  if (!linkDocument) {
+  if (!linkDocument || linkDocument.userId !== userId) {
     return { success: false, errors: ['Link not found.'] };
+  }
+
+  console.log('HERE');
+  // If the link has links, delete them first
+  if (link.links && link.links.length > 0) {
   }
 
   try {

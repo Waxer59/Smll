@@ -19,7 +19,7 @@ export default async function Page({
   const havePassword = link.links.some((link: any) => link.password);
   const isActive = link.activeAt ? new Date() < link.activeAt : true;
   const isExpired = link.deleteAt ? new Date() > link.deleteAt : false;
-  console.log(link);
+
   if (!isActive || isExpired || !link.isEnabled) {
     notFound();
   }
