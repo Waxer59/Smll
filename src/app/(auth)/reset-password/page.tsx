@@ -1,6 +1,6 @@
 import { ResetPasswordCard } from '@/components/auth/reset-password-card';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default function Page() {
   return <ResetPasswordCard />;

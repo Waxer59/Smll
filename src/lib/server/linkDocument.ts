@@ -141,8 +141,7 @@ export async function createShortenedLink(
     if (!user || user === 'MFA') {
       return {
         success: false,
-        errors: ['You must be logged in to create a link or use a token.'],
-        shortenedLink: null
+        errors: ['You must be logged in to create a link or use a token.']
       };
     }
 
@@ -152,7 +151,7 @@ export async function createShortenedLink(
   const { success, errors } = isLinkCorrect(link);
 
   if (!success) {
-    return { success, errors, shortenedLink: null };
+    return { success, errors };
   }
 
   const { database } = await createAdminClient();
@@ -177,8 +176,7 @@ export async function createShortenedLink(
     if (!isAvailable) {
       return {
         success: false,
-        errors: ['Code is already in use.'],
-        shortenedLink: null
+        errors: ['Code is already in use.']
       };
     }
 
@@ -189,8 +187,7 @@ export async function createShortenedLink(
     if (!uniqueCode) {
       return {
         success: false,
-        errors: ['Failed to generate unique code.'],
-        shortenedLink: null
+        errors: ['Failed to generate unique code.']
       };
     }
   }
@@ -218,7 +215,7 @@ export async function createShortenedLink(
     return {
       success: true,
       errors: [],
-      shortenedLink: {
+      link: {
         id: $id,
         links: linkDocument.links.map(
           ({ $id, url }: { $id: string; url: string }) => ({
@@ -245,7 +242,7 @@ export async function createShortenedLink(
     console.log(error);
   }
 
-  return { success: false, errors: [], shortenedLink: null };
+  return { success: false, errors: [] };
 }
 
 export async function deleteLinkById(
@@ -288,11 +285,28 @@ export async function deleteLinkById(
   return { success: true, errors: [] };
 }
 
+async function deleteSingleLinkById(linkId: string) {
+  const { database } = await createAdminClient();
+
+  try {
+    await database.deleteDocument(
+      APPWRITE_DATABASES.link_shortener,
+      APPWRITE_COLLECTIONS.links,
+      linkId
+    );
+  } catch (error) {
+    console.log(error);
+    return { success: false, errors: ['Failed to delete link.'] };
+  }
+
+  return { success: true, errors: [] };
+}
+
 export async function editLinkById(
   linkId: string,
   link: UpdateLinkDetails,
   userId?: string
-): Promise<OperationResult> {
+): Promise<LinkOperationResult> {
   if (!userId) {
     const user = await getLoggedInUser();
 
@@ -305,45 +319,101 @@ export async function editLinkById(
 
     userId = user.$id;
   }
+  const { success, errors } = isLinkCorrect(link);
+
+  if (!success) {
+    return { success, errors };
+  }
 
   const { database } = await createAdminClient();
 
   // Check if the link belongs to the user
   const linkDocument = await getShortenedLinkById(linkId, userId);
 
-  if (!linkDocument || linkDocument.userId !== userId) {
+  if (!linkDocument || linkDocument.creatorId !== userId) {
     return { success: false, errors: ['Link not found.'] };
   }
 
-  console.log('HERE');
-  // If the link has links, delete them first
-  if (link.links && link.links.length > 0) {
+  // Check if updated link code is unique
+  if (link.code && link.code !== linkDocument.code) {
+    const isAvailable = await isCodeAvailable(link.code);
+
+    if (!isAvailable) {
+      return { success: false, errors: ['Code is already in use.'] };
+    }
+  }
+
+  // If links are deleted, delete them first starting from the bottom
+  const haveLinksToDelete =
+    link.links && link.links.length < linkDocument.links.length;
+  if (haveLinksToDelete) {
+    const numberOfLinksToDelete = linkDocument.links.length - link.links.length;
+    const toDelete = linkDocument.links.slice(numberOfLinksToDelete);
+
+    try {
+      await Promise.all(
+        toDelete.map((link: Models.Document) => deleteSingleLinkById(link.$id))
+      );
+    } catch (error) {
+      console.log(error);
+      return { success: false, errors: ['Failed to update link.'] };
+    }
   }
 
   try {
-    await database.updateDocument(
+    const updatedLink = await database.updateDocument(
       APPWRITE_DATABASES.link_shortener,
       APPWRITE_COLLECTIONS.shortened_links,
       linkId,
       {
-        links: link?.links?.map((link) => {
-          if (link.password) {
-            link.password = bcrypt.hashSync(link.password, SALT_ROUNDS);
-          }
-
-          return link;
-        }),
-        tags: link.tags,
-        maxVisits: link.maxVisits,
-        activeAt: link.activeAt,
-        deleteAt: link.deleteAt,
-        isEnabled: link.isEnabled
+        links: link?.links?.map((link, idx) => ({
+          $id: linkDocument.links[idx]?.$id ?? undefined,
+          url: link.url,
+          password: link.password
+            ? bcrypt.hashSync(link.password, SALT_ROUNDS)
+            : null
+        })),
+        tags: link?.tags ?? [],
+        maxVisits: link.maxVisits ?? null,
+        activeAt: link.activeAt ?? null,
+        deleteAt: link.deleteAt ?? null,
+        isEnabled: link.isEnabled ?? linkDocument.isEnabled,
+        code: link.code ?? linkDocument.code
       }
     );
+
+    return {
+      success: true,
+      errors: [],
+      link: {
+        id: updatedLink.$id,
+        links: updatedLink.links.map(
+          ({ $id, url }: { $id: string; url: string }) => ({
+            id: $id,
+            url
+          })
+        ),
+        activeAt: updatedLink.activeAt
+          ? new Date(updatedLink.activeAt)
+          : undefined,
+        deleteAt: updatedLink.deleteAt
+          ? new Date(updatedLink.deleteAt)
+          : undefined,
+        shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${updatedLink.code}`,
+        createdAt: new Date(updatedLink.$createdAt),
+        isProtectedByPassword: Boolean(updatedLink.links[0].password),
+        isSmartLink: Boolean(updatedLink.links.length > 1),
+        originalLink: updatedLink.links[0].url,
+        code: updatedLink.code,
+        tags: updatedLink.tags,
+        maxVisits: updatedLink.maxVisits,
+        isEnabled: updatedLink.isEnabled,
+        clicks: updatedLink.clicks,
+        metrics: updatedLink.metrics
+      }
+    };
   } catch (error) {
     console.log(error);
     return { success: false, errors: ['Failed to update link.'] };
   }
-
-  return { success: true, errors: [] };
 }

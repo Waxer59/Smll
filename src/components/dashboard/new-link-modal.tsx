@@ -61,13 +61,20 @@ export const NewLinkModal: React.FC<Props> = ({
   const [mainLink, setMainLink] = useState(link?.links[0].url ?? '');
   const [mainPassword, setMainPassword] = useState('');
   const [smartLinks, setSmartLinks] = useState<SmartLinkDetails[]>(
-    link?.links?.slice(1).map((el) => ({ ...el, id: crypto.randomUUID() })) ??
-      []
+    link?.links
+      ?.slice(1)
+      .map((el) => ({ ...el, id: crypto.randomUUID(), password: '' })) ?? []
   );
   const [tags, setTags] = useState<string[]>(link?.tags ?? []);
-  const [expireDate, setExpireDate] = useState<Date | null>(null);
-  const [activeDate, setActiveDate] = useState<Date | null>(null);
-  const [maxClicks, setMaxClicks] = useState<number | null>(null);
+  const [expireDate, setExpireDate] = useState<Date | null>(
+    link?.deleteAt ?? null
+  );
+  const [activeDate, setActiveDate] = useState<Date | null>(
+    link?.activeAt ?? null
+  );
+  const [maxClicks, setMaxClicks] = useState<number | null>(
+    link?.maxVisits ?? null
+  );
   const [code, setCode] = useState<string>(link?.code ?? '');
   const isSmartPassword = smartLinks.length > 0;
 
@@ -144,6 +151,9 @@ export const NewLinkModal: React.FC<Props> = ({
       toast.error('Expires date must be after active date.');
       return;
     }
+
+    // Remove smart links passwords
+    setSmartLinks(smartLinks.map((link) => ({ ...link, password: '' })));
 
     onSubmit(data);
   };

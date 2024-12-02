@@ -8,11 +8,7 @@ import {
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-interface Params {
-  params: {
-    linkId: string;
-  };
-}
+export const revalidate = 0;
 
 const requestSchema = z.object({
   link: shortenedLinkSchema
@@ -65,10 +61,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Link is required.' }, { status: 400 });
   }
 
-  const { success, errors, shortenedLink } = await createShortenedLink(
-    link,
-    userId
-  );
+  const {
+    success,
+    errors,
+    link: shortenedLink
+  } = await createShortenedLink(link, userId);
 
   if (!success || !shortenedLink) {
     return NextResponse.json({ errors }, { status: 400 });

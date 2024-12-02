@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLinksStore } from '@/store/links';
-import { editLinkById } from '@/lib/server/linkDocument';
+import { deleteLinkById, editLinkById } from '@/lib/server/linkDocument';
 import { useState } from 'react';
 
 interface Props {
@@ -59,40 +59,47 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
 
   const handleEnableLink = () => {
     const newLink = {
+      ...link,
       isEnabled: !isEnabled
     };
 
     setIsUpdatingLink(true);
     toast.promise(editLinkById(id, newLink), {
-      loading: `${!isEnabled ? 'Disabling' : 'Enabling'} link...`,
-      success: () => {
+      loading: `${isEnabled ? 'Disabling' : 'Enabling'} link...`,
+      success: (data) => {
         setIsUpdatingLink(false);
+        console.log(data);
+        if (!data.success) {
+          toast.error('Failed to save link.');
+          return;
+        }
+
         editLinkByIdStore(id, newLink);
-        return `Link ${!isEnabled ? 'disabled' : 'enabled'} successfully.`;
+        return `Link ${isEnabled ? 'disabled' : 'enabled'} successfully.`;
       },
       error: () => {
         setIsUpdatingLink(false);
         editLinkByIdStore(id, newLink);
-        return `Error ${!isEnabled ? 'disabling' : 'enabling'} link.`;
+        return `Error ${isEnabled ? 'disabling' : 'enabling'} link.`;
       }
     });
   };
 
   const handleDeleteLink = async () => {
     setIsUpdatingLink(true);
-    toast.promise(
-      fetch(`/api/link/${id}`, {
-        method: 'DELETE'
-      }),
-      {
-        loading: 'Deleting link...',
-        success: () => {
-          removeLinkById(id);
-          return 'Link deleted successfully.';
-        },
-        error: 'Failed to delete link.'
-      }
-    );
+    toast.promise(deleteLinkById(id), {
+      loading: 'Deleting link...',
+      success: (data) => {
+        if (!data.success) {
+          toast.error('Failed to delete link.');
+          return;
+        }
+
+        removeLinkById(id);
+        return 'Link deleted successfully.';
+      },
+      error: 'Failed to delete link.'
+    });
   };
 
   return (

@@ -105,8 +105,8 @@ export async function getUserShortenedLinks(
         isEnabled,
         createdAt: new Date($createdAt),
         tags,
-        activeAt,
-        deleteAt,
+        activeAt: activeAt ? new Date(activeAt) : undefined,
+        deleteAt: deleteAt ? new Date(deleteAt) : undefined,
         links: linksDocument.map(
           ({ $id, url }: { $id: string; url: string }) => ({
             id: $id,

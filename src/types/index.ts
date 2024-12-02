@@ -6,10 +6,9 @@ export interface SingleLinkDetails {
 export interface MetricsDetails {
   createdAt: string;
   views: number;
-  countries: string[];
 }
 
-export interface UpdateLinkDetails extends Partial<CreateLinkDetails> {
+export interface UpdateLinkDetails extends CreateLinkDetails {
   isEnabled?: boolean;
 }
 
@@ -53,5 +52,5 @@ export interface OperationResult {
 }
 
 export interface LinkOperationResult extends OperationResult {
-  shortenedLink: LinkDetails | null;
+  link?: LinkDetails;
 }

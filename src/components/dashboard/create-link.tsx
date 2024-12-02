@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { type CreateLinkDetails } from '@/types';
 import { toast } from 'sonner';
 import { useLinksStore } from '@/store/links';
+import { createShortenedLink } from '@/lib/server/linkDocument';
 
 export const CreateLink = () => {
   const addLink = useLinksStore((state) => state.addLink);
@@ -18,18 +19,11 @@ export const CreateLink = () => {
     setIsModalOpen(true);
 
     try {
-      const response = await fetch('/api/link', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ link: createLink })
-      });
-      const data = await response.json();
+      const { success, link: data } = await createShortenedLink(createLink);
 
-      if (response.ok) {
+      if (success) {
         toast.success('Link created successfully.');
-        addLink(data);
+        addLink(data!);
         setIsModalOpen(false);
       } else {
         toast.error('Failed to create link.');

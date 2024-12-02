@@ -1,4 +1,4 @@
-import { LinkDetails } from '@/types';
+import type { LinkDetails } from '@/types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
@@ -15,7 +15,7 @@ interface Actions {
   setEditLinkId: (editLinkId: string | null) => void;
   setQrLinkId: (qrLinkId: string | null) => void;
   setLinks: (links: LinkDetails[]) => void;
-  editLinkById: (linkId: string, link: Partial<LinkDetails>) => void;
+  editLinkById: (linkId: string, link: LinkDetails) => void;
   addLink: (link: LinkDetails) => void;
   removeLinkById: (linkId: string) => void;
   clear(): void;
@@ -40,12 +40,7 @@ export const useLinksStore = create<State & Actions>()(
     editLinkById: (linkId, editedLink) =>
       set((state) => ({
         links: state.links.map((link) =>
-          link.id === linkId
-            ? {
-                ...link,
-                ...editedLink
-              }
-            : link
+          link.id === linkId ? editedLink : link
         )
       })),
     removeLinkById: (linkId) =>

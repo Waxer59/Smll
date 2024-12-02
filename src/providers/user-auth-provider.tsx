@@ -59,23 +59,20 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
         const [user, accountLinks, accountTokens, userAccountSession] =
           resolvedUserData;
 
-        if (!user) {
+        if (!user || !userAccountSession) {
           router.push('/');
           return;
         } else if (user === 'MFA') {
           router.push('/mfa');
           return;
-        } else if (!userAccountSession) {
-          router.push('/');
-          return;
         }
 
+        setLinks(accountLinks ?? []);
+        setTokens(accountTokens ?? []);
         setName(user.name);
         setHasMFA(user.mfa);
         setEmail(user.email);
         setHasEmailVerification(user.emailVerification);
-        setLinks(accountLinks ?? []);
-        setTokens(accountTokens ?? []);
         setIsPasswordlessAccount(
           userAccountSession.provider === APPWRITE_PROVIDERS.oauth2 ||
             userAccountSession.provider === APPWRITE_PROVIDERS.magicUrl

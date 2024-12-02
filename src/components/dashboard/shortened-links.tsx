@@ -5,11 +5,10 @@ import { CreateLink } from './create-link';
 import { useState } from 'react';
 
 interface Props {
-  tags?: string[];
   links?: LinkDetails[];
 }
 
-export const ShortenedLinks: React.FC<Props> = ({ tags, links }) => {
+export const ShortenedLinks: React.FC<Props> = ({ links }) => {
   const linksTags = links?.map((link) => link.tags).flat();
   const [filterTags, setFilterTags] = useState<string[]>([]);
 

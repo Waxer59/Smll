@@ -7,8 +7,10 @@ import { editLinkById } from '@/lib/server/linkDocument';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
+const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
+
 export const LinkModals = () => {
-  const [isUpdatingLink, setisUpdatingLink] = useState(false);
+  const [isUpdatingLink, setIsUpdatingLink] = useState(false);
   const links = useLinksStore((state) => state.links);
   const editLinkId = useLinksStore((state) => state.editLinkId);
   const setEditLinkId = useLinksStore((state) => state.setEditLinkId);
@@ -35,18 +37,30 @@ export const LinkModals = () => {
           onClose={() => setEditLinkId(null)}
           isLoadingCreation={isUpdatingLink}
           onSubmit={(link) => {
-            setisUpdatingLink(true);
+            setIsUpdatingLink(true);
             toast.promise(editLinkById(targetEditLink.id, link), {
               loading: 'Saving link...',
-              success: () => {
+              success: (data) => {
                 setEditLinkId(null);
-                setisUpdatingLink(false);
-                editLinkByIdStore(targetEditLink.id, link);
+                if (!data.success) {
+                  toast.error('Failed to save link.');
+                  return;
+                }
+
+                setIsUpdatingLink(false);
+                editLinkByIdStore(targetEditLink.id, {
+                  ...targetEditLink,
+                  ...link,
+                  shortenedLink: NEXT_PUBLIC_BASE_URL + '/' + link.code,
+                  originalLink: link.links[0].url,
+                  isSmartLink: Boolean(link.links.length > 1),
+                  isProtectedByPassword: Boolean(link.links[0].password)
+                });
                 return 'Link saved successfully.';
               },
               error: () => {
                 setEditLinkId(null);
-                setisUpdatingLink(false);
+                setIsUpdatingLink(false);
                 return 'Error saving link.';
               }
             });

@@ -4,6 +4,8 @@ import { notFound, redirect, RedirectType } from 'next/navigation';
 import { createMetric } from '@/lib/server/metricsDocument';
 import { headers } from 'next/headers';
 
+export const revalidate = 0;
+
 export default async function Page({
   params: { code }
 }: {

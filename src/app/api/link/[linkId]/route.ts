@@ -9,6 +9,8 @@ import {
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+export const revalidate = 0;
+
 interface Params {
   params: {
     linkId: string;

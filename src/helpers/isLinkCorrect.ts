@@ -34,7 +34,7 @@ export function isLinkCorrect(link: CreateLinkDetails): OperationResult {
   }
 
   // Max clicks must be greater than 0
-  if (link.maxVisits !== undefined && link.maxVisits < 1) {
+  if (link.maxVisits != undefined && link.maxVisits < 1) {
     errors.push('Max visits must be greater than 0.');
   }
 

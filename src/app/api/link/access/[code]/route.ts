@@ -3,6 +3,8 @@ import { getShortenedLinkByCode } from '@/lib/server/linkDocument';
 import { notFound } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const revalidate = 0;
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { code: string } }
