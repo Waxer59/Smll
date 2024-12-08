@@ -118,8 +118,7 @@ export async function getUserShortenedLinks(
         isSmartLink: Boolean(linksDocument.length > 1),
         maxVisits,
         originalLink: linksDocument[0]?.url,
-        metrics,
-        clicks: 0
+        metrics
       })
     );
   } catch (error) {

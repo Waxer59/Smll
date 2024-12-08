@@ -1,14 +1,7 @@
+import { MONTHS } from '@/constants';
+import { useLinksStore } from '@/store/links';
 import { BarChart } from '@mantine/charts';
 import { Card } from '@mantine/core';
-
-const data = [
-  { month: 'January', Smartphones: 1200, Laptops: 900, Tablets: 200 },
-  { month: 'February', Smartphones: 1900, Laptops: 1200, Tablets: 400 },
-  { month: 'March', Smartphones: 400, Laptops: 1000, Tablets: 200 },
-  { month: 'April', Smartphones: 1000, Laptops: 200, Tablets: 800 },
-  { month: 'May', Smartphones: 800, Laptops: 1400, Tablets: 1200 },
-  { month: 'June', Smartphones: 750, Laptops: 600, Tablets: 1000 }
-];
 
 interface Props {
   activeLinks: number;
@@ -16,6 +9,33 @@ interface Props {
 }
 
 export const LinksStats: React.FC<Props> = ({ activeLinks, inactiveLinks }) => {
+  const { links } = useLinksStore();
+
+  const getData = () => {
+    const currentYear = new Date().getFullYear();
+    const months = new Array(MONTHS.length)
+      .fill(0)
+      .map((_, i) => currentYear - i);
+    return months.map((month, idx) => {
+      const monthName = MONTHS[idx];
+      const monthData = links.filter((link) =>
+        link.metrics.find((m) => m.month === idx)
+      );
+
+      const totalViews = monthData.reduce(
+        (acc, curr) => acc + curr.metrics.reduce((a, b) => a + b.views, 0),
+        0
+      );
+
+      return {
+        month: monthName,
+        Views: totalViews
+      };
+    });
+  };
+
+  console.log(getData());
+
   return (
     <>
       <ul className="flex gap-10">
@@ -43,13 +63,9 @@ export const LinksStats: React.FC<Props> = ({ activeLinks, inactiveLinks }) => {
       <Card className="mt-10" radius="md" shadow="sm" withBorder>
         <BarChart
           h={300}
-          data={data}
+          data={getData()}
           dataKey="month"
-          series={[
-            { name: 'Smartphones', color: 'violet.6' },
-            { name: 'Laptops', color: 'blue.6' },
-            { name: 'Tablets', color: 'teal.6' }
-          ]}
+          series={[{ name: 'Views', color: 'indigo' }]}
           tickLine="y"
           withYAxis={false}
         />

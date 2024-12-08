@@ -26,5 +26,5 @@ export const editShortenedLinkSchema = z.object({
   activeAt: z.date().optional(),
   maxVisits: z.number().optional(),
   tags: z.array(z.string()).optional(),
-  enable: z.boolean().default(true)
+  isEnabled: z.boolean().default(true)
 });

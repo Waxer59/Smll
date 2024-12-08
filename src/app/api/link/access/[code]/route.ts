@@ -1,5 +1,12 @@
 import { getLinkByPassword } from '@/helpers/getLinkByPassword';
+import { accessLink } from '@/lib/server/accessLink';
 import { getShortenedLinkByCode } from '@/lib/server/linkDocument';
+import {
+  createMetric,
+  getAllMetricsForLinkId,
+  getMetricsByLinkIdDate,
+  updateMetric
+} from '@/lib/server/metricsDocument';
 import { notFound } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -16,16 +23,10 @@ export async function POST(
     notFound();
   }
 
-  const havePassword = link.links.some((link: any) => link.password);
-  const isActive = link.activeAt ? new Date() < link.activeAt : true;
-  const isExpired = link.deleteAt ? new Date() > link.deleteAt : false;
-  const hasReachedMaxVisits = link.maxVisits
-    ? link.clicks >= link.maxVisits
-    : false;
+  const { havePassword, isActive, isExpired, isEnabled, hasReachedMaxVisits } =
+    await accessLink(link);
 
-  // TODO: Implement metrics
-
-  if (!isActive || isExpired || !link.isEnabled || hasReachedMaxVisits) {
+  if (!isActive || isExpired || !isEnabled || hasReachedMaxVisits) {
     notFound();
   }
 

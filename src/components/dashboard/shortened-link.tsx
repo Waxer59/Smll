@@ -40,12 +40,13 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
     deleteAt,
     activeAt,
     maxVisits,
-    clicks,
     tags,
     isEnabled,
     isProtectedByPassword,
-    isSmartLink
+    isSmartLink,
+    metrics
   } = link;
+
   const [isUpdatingLink, setIsUpdatingLink] = useState(false);
   const removeLinkById = useLinksStore((state) => state.removeLinkById);
   const setQrLinkId = useLinksStore((state) => state.setQrLinkId);
@@ -170,7 +171,8 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
         <li className="flex items-center gap-2">
           <MousePointerClick size={16} />
           <span>
-            Clicks: {clicks} {maxVisits ? `/ ${maxVisits}` : ''}
+            Clicks: {metrics?.reduce((acc, curr) => acc + curr.views, 0) ?? 0}{' '}
+            {maxVisits ? `/ ${maxVisits}` : ''}
           </span>
         </li>
       </ul>

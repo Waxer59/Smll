@@ -9,6 +9,7 @@ import {
 } from '@/constants';
 import {
   CreateLinkDetails,
+  LinkDetails,
   LinkOperationResult,
   OperationResult,
   UpdateLinkDetails
@@ -232,7 +233,6 @@ export async function createShortenedLink(
         originalLink: link.links[0].url,
         shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${uniqueCode}`,
         createdAt: new Date($createdAt),
-        clicks: 0,
         isProtectedByPassword: Boolean(link.links[0].password),
         isSmartLink: Boolean(link.links.length > 1),
         metrics: []
@@ -344,9 +344,7 @@ export async function editLinkById(
   }
 
   // If links are deleted, delete them first starting from the bottom
-  const haveLinksToDelete =
-    link.links && link.links.length < linkDocument.links.length;
-  if (haveLinksToDelete) {
+  if (link.links && link.links.length < linkDocument.links.length) {
     const numberOfLinksToDelete = linkDocument.links.length - link.links.length;
     const toDelete = linkDocument.links.slice(numberOfLinksToDelete);
 
@@ -366,17 +364,18 @@ export async function editLinkById(
       APPWRITE_COLLECTIONS.shortened_links,
       linkId,
       {
-        links: link?.links?.map((link, idx) => ({
-          $id: linkDocument.links[idx]?.$id ?? undefined,
-          url: link.url,
-          password: link.password
-            ? bcrypt.hashSync(link.password, SALT_ROUNDS)
-            : null
-        })),
-        tags: link?.tags ?? [],
-        maxVisits: link.maxVisits ?? null,
-        activeAt: link.activeAt ?? null,
-        deleteAt: link.deleteAt ?? null,
+        links:
+          link?.links?.map((link, idx) => ({
+            $id: linkDocument.links[idx]?.$id ?? undefined,
+            url: link.url,
+            password: link.password
+              ? bcrypt.hashSync(link.password, SALT_ROUNDS)
+              : null
+          })) ?? linkDocument.links,
+        tags: link?.tags ?? linkDocument.tags,
+        maxVisits: link.maxVisits ?? linkDocument.maxVisits,
+        activeAt: link.activeAt ?? linkDocument.activeAt,
+        deleteAt: link.deleteAt ?? linkDocument.deleteAt,
         isEnabled: link.isEnabled ?? linkDocument.isEnabled,
         code: link.code ?? linkDocument.code
       }
@@ -408,7 +407,6 @@ export async function editLinkById(
         tags: updatedLink.tags,
         maxVisits: updatedLink.maxVisits,
         isEnabled: updatedLink.isEnabled,
-        clicks: updatedLink.clicks,
         metrics: updatedLink.metrics
       }
     };

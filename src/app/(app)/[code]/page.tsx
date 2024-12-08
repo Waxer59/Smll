@@ -1,8 +1,13 @@
 import { PasswordProtection } from '@/components/password-protection';
 import { getShortenedLinkByCode } from '@/lib/server/linkDocument';
 import { notFound, redirect, RedirectType } from 'next/navigation';
-import { createMetric } from '@/lib/server/metricsDocument';
-import { headers } from 'next/headers';
+import {
+  createMetric,
+  getAllMetricsForLinkId,
+  getMetricsByLinkIdDate,
+  updateMetric
+} from '@/lib/server/metricsDocument';
+import { accessLink } from '@/lib/server/accessLink';
 
 export const revalidate = 0;
 
@@ -12,22 +17,16 @@ export default async function Page({
   params: { code: string };
 }) {
   const link = await getShortenedLinkByCode(code);
-  const city = headers().get('X-Vercel-IP-City') ?? 'Unknown';
 
   if (!link) {
     notFound();
   }
 
-  const havePassword = link.links.some((link: any) => link.password);
-  const isActive = link.activeAt ? new Date() < link.activeAt : true;
-  const isExpired = link.deleteAt ? new Date() > link.deleteAt : false;
+  const { havePassword, isActive, isExpired, isEnabled, hasReachedMaxVisits } =
+    await accessLink(link);
 
-  if (!isActive || isExpired || !link.isEnabled) {
+  if (!isActive || isExpired || !isEnabled || hasReachedMaxVisits) {
     notFound();
-  }
-
-  if (link.metrics && link.metrics.length === 0) {
-    createMetric(link.id, city);
   }
 
   if (!havePassword) {

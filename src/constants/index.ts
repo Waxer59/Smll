@@ -36,3 +36,17 @@ export enum APPWRITE_PROVIDERS {
   oauth2 = 'oauth2',
   magicUrl = 'magic-url'
 }
+export const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+];

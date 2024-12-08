@@ -1,14 +1,17 @@
-import { CreateLinkDetails, OperationResult } from '@/types';
+import { CreateLinkDetails, OperationResult, UpdateLinkDetails } from '@/types';
 import { z } from 'zod';
 import { areAllLinksPasswordsUnique } from './areAllLinksPasswordsUnique';
 import { isDateBefore } from './isDateBefore';
 import { isFutureDate } from './isFutureDate';
 
-export function isLinkCorrect(link: CreateLinkDetails): OperationResult {
+export function isLinkCorrect(
+  link: CreateLinkDetails | UpdateLinkDetails
+): OperationResult {
   const errors: string[] = [];
 
   // Password must be at least 1 character
   if (
+    link.links &&
     link.links.some((l) => (l.password ? l.password.trim().length < 1 : false))
   ) {
     errors.push('Password must be at least 1 character.');
@@ -16,6 +19,7 @@ export function isLinkCorrect(link: CreateLinkDetails): OperationResult {
 
   // Links must be valid urls
   if (
+    link.links &&
     link.links.some((link) => {
       const urlSchema = z.string().url();
       return !urlSchema.safeParse(link.url).success;
@@ -53,8 +57,9 @@ export function isLinkCorrect(link: CreateLinkDetails): OperationResult {
   }
 
   // If one link have password, then all links must have password
-  const havePassword = link.links.some((link) => link.password);
-  const haveAllLinksPasswords = link.links.every((link) => link.password);
+  const havePassword = link.links && link.links.some((link) => link.password);
+  const haveAllLinksPasswords =
+    link.links && link.links.every((link) => link.password);
 
   if (havePassword && !haveAllLinksPasswords) {
     errors.push(
@@ -62,10 +67,12 @@ export function isLinkCorrect(link: CreateLinkDetails): OperationResult {
     );
   }
 
-  const areAllPasswordsUnique = areAllLinksPasswordsUnique(link.links);
+  if (link.links) {
+    const areAllPasswordsUnique = areAllLinksPasswordsUnique(link.links);
 
-  if (!areAllPasswordsUnique) {
-    errors.push('All links passwords must be unique.');
+    if (!areAllPasswordsUnique) {
+      errors.push('All links passwords must be unique.');
+    }
   }
 
   return { success: errors.length === 0, errors };

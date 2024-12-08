@@ -6,9 +6,12 @@ export interface SingleLinkDetails {
 export interface MetricsDetails {
   createdAt: string;
   views: number;
+  year: number;
+  month: number;
 }
 
-export interface UpdateLinkDetails extends CreateLinkDetails {
+export interface UpdateLinkDetails extends Omit<CreateLinkDetails, 'links'> {
+  links?: SingleLinkDetails[];
   isEnabled?: boolean;
 }
 
@@ -28,7 +31,6 @@ export interface LinkDetails extends Omit<CreateLinkDetails, 'tags'> {
   links: SingleLinkDetails[];
   originalLink: string;
   shortenedLink: string;
-  clicks: number;
   metrics: MetricsDetails[];
   tags: string[];
   createdAt: Date;
