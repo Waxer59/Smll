@@ -1,12 +1,6 @@
 import { PasswordProtection } from '@/components/password-protection';
 import { getShortenedLinkByCode } from '@/lib/server/linkDocument';
 import { notFound, redirect, RedirectType } from 'next/navigation';
-import {
-  createMetric,
-  getAllMetricsForLinkId,
-  getMetricsByLinkIdDate,
-  updateMetric
-} from '@/lib/server/metricsDocument';
 import { accessLink } from '@/lib/server/accessLink';
 
 export const revalidate = 0;

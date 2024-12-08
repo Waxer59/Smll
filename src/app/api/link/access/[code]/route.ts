@@ -1,12 +1,6 @@
 import { getLinkByPassword } from '@/helpers/getLinkByPassword';
 import { accessLink } from '@/lib/server/accessLink';
 import { getShortenedLinkByCode } from '@/lib/server/linkDocument';
-import {
-  createMetric,
-  getAllMetricsForLinkId,
-  getMetricsByLinkIdDate,
-  updateMetric
-} from '@/lib/server/metricsDocument';
 import { notFound } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
 
