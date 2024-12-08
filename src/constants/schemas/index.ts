@@ -7,6 +7,7 @@ export const shortenedLinkSchema = z.object({
       password: z.string().optional()
     })
   ),
+  code: z.string().optional(),
   deleteAt: z.date().optional(),
   activeAt: z.date().optional(),
   maxVisits: z.number().optional(),
@@ -22,6 +23,7 @@ export const editShortenedLinkSchema = z.object({
       })
     )
     .optional(),
+  code: z.string().optional(),
   deleteAt: z.date().optional(),
   activeAt: z.date().optional(),
   maxVisits: z.number().optional(),
