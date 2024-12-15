@@ -1,4 +1,3 @@
-import { LinkDetails } from '@/types';
 import {
   getMetricsByLinkIdDate,
   getAllMetricsForLinkId,

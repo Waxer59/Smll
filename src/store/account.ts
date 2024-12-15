@@ -1,4 +1,4 @@
-import { LinkDetails, TokenDetails } from '@/types';
+import { TokenDetails } from '@/types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 

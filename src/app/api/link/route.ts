@@ -3,7 +3,7 @@ import { getJwtFromHeader } from '@/helpers/getJwtFromHeader';
 import { getUserIdFromJWT } from '@/helpers/getUserIdFromJWT';
 import {
   createShortenedLink,
-  getAllShortenedLinksForUser
+  getAllShortenedLinksFromUser
 } from '@/lib/server/linkDocument';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json({
-    links: await getAllShortenedLinksForUser(userId)
+    links: await getAllShortenedLinksFromUser(userId)
   });
 }
 

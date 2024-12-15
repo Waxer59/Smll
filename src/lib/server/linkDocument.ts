@@ -9,7 +9,6 @@ import {
 } from '@/constants';
 import {
   CreateLinkDetails,
-  LinkDetails,
   LinkOperationResult,
   OperationResult,
   UpdateLinkDetails
@@ -79,7 +78,7 @@ export async function getShortenedLinkByCode(
   return null;
 }
 
-export async function getAllShortenedLinksForUser(
+export async function getAllShortenedLinksFromUser(
   userId: string
 ): Promise<Models.Document[]> {
   const { database } = await createAdminClient();
