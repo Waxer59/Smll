@@ -363,6 +363,7 @@ export async function editLinkById(
       APPWRITE_COLLECTIONS.shortened_links,
       linkId,
       {
+        ...link,
         links:
           link?.links?.map((link, idx) => ({
             $id: linkDocument.links[idx]?.$id ?? undefined,
@@ -370,13 +371,7 @@ export async function editLinkById(
             password: link.password
               ? bcrypt.hashSync(link.password, SALT_ROUNDS)
               : null
-          })) ?? linkDocument.links,
-        tags: link?.tags ?? linkDocument.tags,
-        maxVisits: link.maxVisits ?? linkDocument.maxVisits,
-        activeAt: link.activeAt ?? linkDocument.activeAt,
-        deleteAt: link.deleteAt ?? linkDocument.deleteAt,
-        isEnabled: link.isEnabled ?? linkDocument.isEnabled,
-        code: link.code ?? linkDocument.code
+          })) ?? linkDocument.links
       }
     );
 
