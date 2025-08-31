@@ -1,6 +1,6 @@
 'use client';
 
-import { LinkDetails } from '@/types';
+import { LinkDetails, UpdateLinkDetails } from '@/types';
 import {
   Card,
   Tooltip,
@@ -59,7 +59,12 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
   };
 
   const handleEnableLink = () => {
-    const newLink = {
+    const newLink: UpdateLinkDetails = {
+      links: link.links,
+      isEnabled: !isEnabled
+    };
+
+    const newLinkStore = {
       ...link,
       isEnabled: !isEnabled
     };
@@ -75,12 +80,12 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
           return;
         }
 
-        editLinkByIdStore(id, newLink);
+        editLinkByIdStore(id, newLinkStore);
         return `Link ${isEnabled ? 'disabled' : 'enabled'} successfully.`;
       },
       error: () => {
         setIsUpdatingLink(false);
-        editLinkByIdStore(id, newLink);
+        editLinkByIdStore(id, newLinkStore);
         return `Error ${isEnabled ? 'disabling' : 'enabling'} link.`;
       }
     });
