@@ -2,9 +2,9 @@
 
 import { Cookies, APPWRITE_DATABASES, APPWRITE_COLLECTIONS } from '@/constants';
 import { cookies } from 'next/headers';
-import { Models, Query, ID, AuthenticationFactor } from 'node-appwrite';
+import { Models, Query, ID, AuthenticationFactor } from 'appwrite';
 import { createSessionClient, createAdminClient } from '../appwrite';
-import { RequireMFA } from '@/types';
+import { User, RequireMFA } from '@/types';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -24,9 +24,7 @@ export async function sendVerificationEmail() {
   }
 }
 
-export async function getLoggedInUser(): Promise<
-  Promise<Models.User<Models.Preferences>> | RequireMFA | null
-> {
+export async function getLoggedInUser(): Promise<User | RequireMFA | null> {
   const sessionClient = await createSessionClient();
 
   if (!sessionClient) {
@@ -36,7 +34,15 @@ export async function getLoggedInUser(): Promise<
   const { account } = sessionClient;
 
   try {
-    return await account.get();
+    const user = await account.get();
+
+    return {
+      $id: user.$id,
+      name: (user as any).name,
+      email: (user as any).email,
+      mfa: (user as any).mfa,
+      emailVerification: (user as any).emailVerification
+    };
   } catch (error: any) {
     if (error.type === 'user_more_factors_required') {
       return 'MFA';
@@ -66,8 +72,8 @@ export async function getCurrentSession(): Promise<Models.Session | null> {
 export async function loginUser(
   email: string,
   password: string
-): Promise<Models.Session | null> {
-  let session = null;
+): Promise<boolean> {
+  let session = null as any;
   const { account } = await createAdminClient();
 
   try {
@@ -81,10 +87,10 @@ export async function loginUser(
     });
   } catch (error: any) {
     console.log(error);
-    return null;
+    return false;
   }
 
-  return session;
+  return !!session;
 }
 
 export async function createMFAChallenge(): Promise<string | null> {
@@ -134,31 +140,28 @@ export async function createMFARecoveryChallenge(): Promise<string | null> {
 export async function registerUser(
   email: string,
   password: string
-): Promise<Models.User<Models.Preferences> | null> {
-  let user = null;
+): Promise<boolean> {
   const { account } = await createAdminClient();
 
   const userId = ID.unique();
   const name = email.split('@')[0];
 
   try {
-    user = await account.create(userId, email, password, name);
+    await account.create(userId, email, password, name);
+    return true;
   } catch (error) {
     console.log(error);
+    return false;
   }
-
-  return user;
 }
 
 export async function logoutUser() {
   (await cookies()).delete(Cookies.session);
 }
 
-export async function loginWithMagicLink(
-  email: string
-): Promise<Models.Token | null> {
+export async function loginWithMagicLink(email: string): Promise<boolean> {
   const { account } = await createAdminClient();
-  let token = null;
+  let token = null as any;
 
   try {
     token = await account.createMagicURLToken(
@@ -168,9 +171,10 @@ export async function loginWithMagicLink(
     );
   } catch (error) {
     console.log(error);
+    return false;
   }
 
-  return token;
+  return !!token;
 }
 
 export async function disableAccountMFA() {
@@ -237,33 +241,33 @@ export async function deleteAccount() {
 
   try {
     // Delete all created links
-    const links = await database.listDocuments(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.shortened_links,
-      [Query.equal('creatorId', [userId])]
-    );
+    const links = await database.listRows({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.shortened_links,
+      queries: [Query.equal('creatorId', [userId])]
+    });
 
-    for (const link of links.documents) {
-      await database.deleteDocument(
-        APPWRITE_DATABASES.link_shortener,
-        APPWRITE_COLLECTIONS.shortened_links,
-        link.$id
-      );
+    for (const link of links.rows) {
+      await database.deleteRow({
+        databaseId: APPWRITE_DATABASES.link_shortener,
+        tableId: APPWRITE_COLLECTIONS.shortened_links,
+        rowId: link.$id
+      });
     }
 
     // Delete all account tokens
-    const tokens = await database.listDocuments(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.account_tokens,
-      [Query.equal('creatorId', [userId])]
-    );
+    const tokens = await database.listRows({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.account_tokens,
+      queries: [Query.equal('creatorId', [userId])]
+    });
 
-    for (const token of tokens.documents) {
-      await database.deleteDocument(
-        APPWRITE_DATABASES.link_shortener,
-        APPWRITE_COLLECTIONS.account_tokens,
-        token.$id
-      );
+    for (const token of tokens.rows) {
+      await database.deleteRow({
+        databaseId: APPWRITE_DATABASES.link_shortener,
+        tableId: APPWRITE_COLLECTIONS.account_tokens,
+        rowId: token.$id
+      });
     }
 
     await users.delete(userId);
@@ -288,7 +292,9 @@ export async function closeAllSessions() {
   }
 }
 
-export async function getUserAccountSession(): Promise<Models.Session | null> {
+export async function getUserAccountSession(): Promise<{
+  provider?: string;
+} | null> {
   const sessionClient = await createSessionClient();
 
   if (!sessionClient) {
@@ -299,7 +305,7 @@ export async function getUserAccountSession(): Promise<Models.Session | null> {
 
   try {
     const session = await account.getSession('current');
-    return session;
+    return { provider: (session as any).provider };
   } catch (error) {
     return null;
   }

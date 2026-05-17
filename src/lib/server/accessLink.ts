@@ -4,7 +4,7 @@ import {
   updateMetric,
   createMetric
 } from './metricsDocument';
-import { Models } from 'node-appwrite';
+import { ShortenedLinkRow } from '@/types';
 
 interface AccessLink {
   havePassword: boolean;
@@ -14,10 +14,12 @@ interface AccessLink {
   hasReachedMaxVisits: boolean;
 }
 
-export async function accessLink(link: Models.Document): Promise<AccessLink> {
+export async function accessLink(link: ShortenedLinkRow): Promise<AccessLink> {
   const havePassword = link.links.some((link: any) => link.password);
-  const isActive = link.activeAt ? new Date() < link.activeAt : true;
-  const isExpired = link.deleteAt ? new Date() > link.deleteAt : false;
+  const isActive = link.activeAt ? new Date() < new Date(link.activeAt) : true;
+  const isExpired = link.deleteAt
+    ? new Date() > new Date(link.deleteAt)
+    : false;
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   const monthMetrics = await getMetricsByLinkIdDate(
@@ -41,7 +43,7 @@ export async function accessLink(link: Models.Document): Promise<AccessLink> {
     havePassword,
     isActive,
     isExpired,
-    isEnabled: link.isEnabled,
+    isEnabled: Boolean(link.isEnabled),
     hasReachedMaxVisits
   };
 }

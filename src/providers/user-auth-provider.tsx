@@ -8,8 +8,10 @@ import {
 import { getUserShortenedLinks } from '@/lib/server/appwrite';
 import { getUserTokens } from '@/lib/server/appwrite-functions/account';
 import {
+  closeAllSessions,
   getLoggedInUser,
-  getUserAccountSession
+  getUserAccountSession,
+  logoutUser
 } from '@/lib/server/appwrite-functions/auth';
 import { useAccountStore } from '@/store/account';
 import { useLinksStore } from '@/store/links';
@@ -79,6 +81,9 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
         );
       } catch (error) {
         toast.error('There was an error while loading your account.');
+        await closeAllSessions();
+        logoutUser();
+        router.push('/');
         return;
       }
     }

@@ -104,16 +104,16 @@ export const LoginCard: React.FC = () => {
         </Button>
       </form>
       <div className="flex flex-col gap-2 mt-2">
-        <Link href="/forgot-password" passHref legacyBehavior>
-          <Anchor variant="light" c="gray">
-            Forgot password?
-          </Anchor>
-        </Link>
-        <Link href="/register" passHref legacyBehavior>
-          <Anchor variant="light" c="gray">
-            Create account
-          </Anchor>
-        </Link>
+        <Anchor
+          variant="light"
+          c="gray"
+          href="/forgot-password"
+          component={Link}>
+          Forgot password?
+        </Anchor>
+        <Anchor variant="light" c="gray" href="/register" component={Link}>
+          Create account
+        </Anchor>
       </div>
       <div className="flex flex-col justify-center items-center gap-4 text-sm mt-8">
         <LoginAlternativeButton

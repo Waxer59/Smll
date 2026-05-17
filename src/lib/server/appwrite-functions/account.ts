@@ -1,6 +1,6 @@
 'use server';
 
-import { ID, Models, Query } from 'node-appwrite';
+import { ID, Models, Query } from 'appwrite';
 import { createAdminClient, createSessionClient } from '../appwrite';
 import jwt from 'jsonwebtoken';
 import { APPWRITE_COLLECTIONS, APPWRITE_DATABASES } from '@/constants';

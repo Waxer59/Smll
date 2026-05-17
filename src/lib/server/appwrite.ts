@@ -6,12 +6,14 @@ import {
   Databases,
   Avatars,
   Users,
-  Query
+  Query,
+  TablesDB
 } from 'node-appwrite';
 import { cookies } from 'next/headers';
 import { APPWRITE_COLLECTIONS, APPWRITE_DATABASES, Cookies } from '@/constants';
 import { getLoggedInUser } from './appwrite-functions/auth';
 import { LinkDetails } from '@/types';
+import { decrypt } from './encryption';
 
 const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -56,7 +58,7 @@ export async function createAdminClient() {
       return new Account(client);
     },
     get database() {
-      return new Databases(client);
+      return new TablesDB(client);
     },
     get users() {
       return new Users(client);
@@ -81,13 +83,16 @@ export async function getUserShortenedLinks(
   let links: LinkDetails[] | null = null;
 
   try {
-    const resp = await database.listDocuments(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.shortened_links,
-      [Query.equal('creatorId', [userId])]
-    );
+    const resp = await database.listRows({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.shortened_links,
+      queries: [
+        Query.equal('creatorId', [userId]),
+        Query.select(['*', 'links.*', 'metrics.*'])
+      ]
+    });
 
-    links = resp.documents.map(
+    links = resp.rows.map(
       ({
         $id,
         $createdAt,
@@ -107,17 +112,17 @@ export async function getUserShortenedLinks(
         tags,
         activeAt: activeAt ? new Date(activeAt) : undefined,
         deleteAt: deleteAt ? new Date(deleteAt) : undefined,
-        links: linksDocument.map(
+        links: linksDocument?.map(
           ({ $id, url }: { $id: string; url: string }) => ({
             id: $id,
-            url
+            url: decrypt(url)
           })
         ),
         shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${code}`,
         isProtectedByPassword: Boolean(linksDocument[0]?.password),
         isSmartLink: Boolean(linksDocument.length > 1),
         maxVisits,
-        originalLink: linksDocument[0]?.url,
+        originalLink: decrypt(linksDocument[0].url),
         metrics
       })
     );

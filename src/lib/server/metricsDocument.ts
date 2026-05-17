@@ -1,6 +1,7 @@
 import { APPWRITE_COLLECTIONS, APPWRITE_DATABASES } from '@/constants';
 import { createAdminClient } from './appwrite';
-import { ID, Models, Query } from 'node-appwrite';
+import { ID, Query } from 'appwrite';
+import { MetricRow } from '@/types';
 
 export async function createMetric(
   linkId: string,
@@ -10,18 +11,18 @@ export async function createMetric(
   const { database } = await createAdminClient();
 
   try {
-    await database.createDocument(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.metrics,
-      ID.unique(),
-      {
+    await database.createRow({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.metrics,
+      rowId: ID.unique(),
+      data: {
         shortenedLinks: [linkId],
         views: 1,
         linkId,
         year,
         month
       }
-    );
+    });
   } catch (error) {
     console.log(error);
   }
@@ -29,17 +30,17 @@ export async function createMetric(
 
 export async function getAllMetricsForLinkId(
   linkId: string
-): Promise<Models.Document[]> {
+): Promise<MetricRow[]> {
   const { database } = await createAdminClient();
 
   try {
-    const metrics = await database.listDocuments(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.metrics,
-      [Query.equal('linkId', linkId)]
-    );
+    const metrics = await database.listRows({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.metrics,
+      queries: [Query.equal('linkId', linkId)]
+    });
 
-    return metrics.documents;
+    return metrics.rows as unknown as MetricRow[];
   } catch (error) {
     console.log(error);
   }
@@ -51,21 +52,25 @@ export async function getMetricsByLinkIdDate(
   linkId: string,
   year: number,
   month: number
-): Promise<Models.Document | null> {
+): Promise<MetricRow | null> {
   const { database } = await createAdminClient();
 
   try {
-    const metrics = await database.listDocuments(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.metrics,
-      [
+    const metrics = await database.listRows({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.metrics,
+      queries: [
         Query.equal('linkId', linkId),
         Query.equal('year', year),
         Query.equal('month', month)
       ]
-    );
+    });
 
-    return metrics.documents[0];
+    if (metrics.rows.length === 0) {
+      return null;
+    }
+
+    return metrics.rows[0] as unknown as MetricRow;
   } catch (error) {
     console.log(error);
   }
@@ -87,14 +92,14 @@ export async function updateMetric(
   }
 
   try {
-    await database.updateDocument(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.metrics,
-      metrics.$id,
-      {
+    await database.updateRow({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.metrics,
+      rowId: metrics.$id,
+      data: {
         views: metrics.views + 1
       }
-    );
+    });
   } catch (error) {
     console.log(error);
   }

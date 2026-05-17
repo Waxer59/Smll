@@ -68,11 +68,14 @@ export const ForgotPasswordCard = () => {
           Send reset link
         </Button>
       </form>
-      <Link href="/login" passHref legacyBehavior>
-        <Anchor variant="light" c="gray" className="mt-8">
-          Go back to login
-        </Anchor>
-      </Link>
+      <Anchor
+        variant="light"
+        c="gray"
+        className="mt-8"
+        href="/login"
+        component={Link}>
+        Go back to login
+      </Anchor>
     </AuthCardLayout>
   );
 };

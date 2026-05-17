@@ -11,15 +11,17 @@ import {
   CreateLinkDetails,
   LinkOperationResult,
   OperationResult,
-  UpdateLinkDetails
+  UpdateLinkDetails,
+  ShortenedLinkRow,
+  LinkRow
 } from '@/types';
 import { nanoid } from 'nanoid';
-import { Query, ID, Models } from 'node-appwrite';
+import { Query, ID } from 'appwrite';
 import { createAdminClient } from './appwrite';
 import { getLoggedInUser } from './appwrite-functions/auth';
 import bcrypt from 'bcrypt';
-import { isLinkCorrect } from '@/helpers/isLinkCorrect';
 import { encrypt, decrypt } from './encryption';
+import { isLinkCorrect } from '@/helpers/isLinkCorrect';
 
 const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -27,11 +29,11 @@ export async function isCodeAvailable(code: string): Promise<boolean> {
   const { database } = await createAdminClient();
 
   try {
-    const link = await database.listDocuments(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.shortened_links,
-      [Query.equal('code', code)]
-    );
+    const link = await database.listRows({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.shortened_links,
+      queries: [Query.equal('code', code)]
+    });
 
     return link.total === 0;
   } catch (error) {
@@ -57,30 +59,24 @@ export async function createUniqueLinkCode(
 
 export async function getShortenedLinkByCode(
   code: string
-): Promise<Models.Document | null> {
+): Promise<ShortenedLinkRow | null> {
   const { database } = await createAdminClient();
 
   try {
-    const link = await database.listDocuments(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.shortened_links,
-      [Query.equal('code', code)]
-    );
+    const link = await database.listRows({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.shortened_links,
+      queries: [Query.equal('code', code)]
+    });
 
     if (link.total === 0) {
       return null;
     }
 
-    const doc = link.documents[0];
+    const doc = link.rows[0] as unknown as ShortenedLinkRow;
 
-    if (doc && doc.shortenedLinkEncrypted) {
-      try {
-        doc.shortenedLink = decrypt(doc.shortenedLinkEncrypted);
-      } catch (err) {
-        console.warn('Failed to decrypt shortened link for code', code, err);
-      }
-    } else if (doc) {
-      doc.shortenedLink = `${NEXT_PUBLIC_BASE_URL}/${doc.code}`;
+    if (doc.links && Array.isArray(doc.links)) {
+      doc.links = doc.links.map((l: any) => ({ ...l, url: decrypt(l.url) }));
     }
 
     return doc;
@@ -93,29 +89,20 @@ export async function getShortenedLinkByCode(
 
 export async function getAllShortenedLinksFromUser(
   userId: string
-): Promise<Models.Document[]> {
+): Promise<ShortenedLinkRow[]> {
   const { database } = await createAdminClient();
 
   try {
-    const links = await database.listDocuments(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.shortened_links,
-      [Query.equal('creatorId', userId)]
-    );
+    const links = await database.listRows({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.shortened_links,
+      queries: [Query.equal('creatorId', userId)]
+    });
 
-    // Decrypt shortened link for each document
-    return links.documents.map((doc: any) => {
-      if (doc && doc.shortenedLinkEncrypted) {
-        try {
-          doc.shortenedLink = decrypt(doc.shortenedLinkEncrypted);
-        } catch (err) {
-          console.warn('Failed to decrypt shortened link for id', doc.$id, err);
-          doc.shortenedLink = `${NEXT_PUBLIC_BASE_URL}/${doc.code}`;
-        }
-      } else {
-        doc.shortenedLink = `${NEXT_PUBLIC_BASE_URL}/${doc.code}`;
+    return links.rows.map((doc: any) => {
+      if (doc.links && Array.isArray(doc.links)) {
+        doc.links = doc.links.map((l: any) => ({ ...l, url: decrypt(l.url) }));
       }
-
       return doc;
     });
   } catch (error) {
@@ -126,7 +113,7 @@ export async function getAllShortenedLinksFromUser(
 export async function getShortenedLinkById(
   id: string,
   userId?: string
-): Promise<Models.Document | null> {
+): Promise<ShortenedLinkRow | null> {
   if (!userId) {
     const user = await getLoggedInUser();
 
@@ -140,28 +127,26 @@ export async function getShortenedLinkById(
   const { database } = await createAdminClient();
 
   try {
-    const link = await database.getDocument(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.shortened_links,
-      id
-    );
+    const link = await database.getRow({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.shortened_links,
+      rowId: id
+    });
 
     if (!link) {
       return null;
     }
 
-    if (link && link.shortenedLinkEncrypted) {
-      try {
-        (link as any).shortenedLink = decrypt(link.shortenedLinkEncrypted);
-      } catch (err) {
-        console.warn('Failed to decrypt shortened link for id', id, err);
-        (link as any).shortenedLink = `${NEXT_PUBLIC_BASE_URL}/${link.code}`;
-      }
-    } else {
-      (link as any).shortenedLink = `${NEXT_PUBLIC_BASE_URL}/${link.code}`;
+    const linkRow = link as unknown as ShortenedLinkRow;
+
+    if (linkRow.links && Array.isArray(linkRow.links)) {
+      linkRow.links = linkRow.links.map((l: any) => ({
+        ...l,
+        url: decrypt(l.url)
+      }));
     }
 
-    return link;
+    return linkRow;
   } catch (error) {
     console.log(error);
   }
@@ -205,6 +190,9 @@ export async function createShortenedLink(
 
   link.links = await Promise.all(hashedLinks);
 
+  // Encrypt URLs before storing
+  const linksToStore = link.links.map((l) => ({ ...l, url: encrypt(l.url) }));
+
   // Generate unique code
   let uniqueCode: string | null;
 
@@ -239,7 +227,7 @@ export async function createShortenedLink(
       $permissions,
       $updatedAt,
       ...linkDocument
-    } = await database.createDocument(
+    } = await database.createRow(
       APPWRITE_DATABASES.link_shortener,
       APPWRITE_COLLECTIONS.shortened_links,
       ID.unique(),
@@ -247,7 +235,7 @@ export async function createShortenedLink(
         ...link,
         code: uniqueCode,
         creatorId: userId,
-        shortenedLinkEncrypted: encrypt(`${NEXT_PUBLIC_BASE_URL}/${uniqueCode}`)
+        links: linksToStore
       }
     );
 
@@ -259,7 +247,7 @@ export async function createShortenedLink(
         links: linkDocument.links.map(
           ({ $id, url }: { $id: string; url: string }) => ({
             id: $id,
-            url
+            url: decrypt(url)
           })
         ),
         code: linkDocument.code,
@@ -269,10 +257,7 @@ export async function createShortenedLink(
         deleteAt: linkDocument.deleteAt,
         isEnabled: true,
         originalLink: link.links[0].url,
-        shortenedLink: decrypt(
-          linkDocument.shortenedLinkEncrypted ??
-            `${NEXT_PUBLIC_BASE_URL}/${uniqueCode}`
-        ),
+        shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${uniqueCode}`,
         createdAt: new Date($createdAt),
         isProtectedByPassword: Boolean(link.links[0].password),
         isSmartLink: Boolean(link.links.length > 1),
@@ -313,11 +298,11 @@ export async function deleteLinkById(
   }
 
   try {
-    await database.deleteDocument(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.shortened_links,
-      linkId
-    );
+    await database.deleteRow({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.shortened_links,
+      rowId: linkId
+    });
   } catch (error) {
     console.log(error);
     return { success: false, errors: ['Failed to delete link.'] };
@@ -330,11 +315,11 @@ async function deleteSingleLinkById(linkId: string) {
   const { database } = await createAdminClient();
 
   try {
-    await database.deleteDocument(
-      APPWRITE_DATABASES.link_shortener,
-      APPWRITE_COLLECTIONS.links,
-      linkId
-    );
+    await database.deleteRow({
+      databaseId: APPWRITE_DATABASES.link_shortener,
+      tableId: APPWRITE_COLLECTIONS.links,
+      rowId: linkId
+    });
   } catch (error) {
     console.log(error);
     return { success: false, errors: ['Failed to delete link.'] };
@@ -391,7 +376,7 @@ export async function editLinkById(
 
     try {
       await Promise.all(
-        toDelete.map((link: Models.Document) => deleteSingleLinkById(link.$id))
+        toDelete.map((link: LinkRow) => deleteSingleLinkById(link.$id))
       );
     } catch (error) {
       console.log(error);
@@ -400,24 +385,25 @@ export async function editLinkById(
   }
 
   try {
-    const newCode = link.code ?? linkDocument.code;
+    const linksToSave =
+      link?.links?.map((l, idx) => ({
+        $id: linkDocument.links[idx]?.$id ?? undefined,
+        url: encrypt(l.url),
+        password: l.password ? bcrypt.hashSync(l.password, SALT_ROUNDS) : null
+      })) ??
+      linkDocument.links.map((l: any) => ({
+        $id: l.$id,
+        url: encrypt(l.url),
+        password: l.password ?? null
+      }));
 
-    const updatedLink = await database.updateDocument(
+    const updatedLink = await database.updateRow(
       APPWRITE_DATABASES.link_shortener,
       APPWRITE_COLLECTIONS.shortened_links,
       linkId,
       {
         ...link,
-        code: newCode,
-        shortenedLinkEncrypted: encrypt(`${NEXT_PUBLIC_BASE_URL}/${newCode}`),
-        links:
-          link?.links?.map((link, idx) => ({
-            $id: linkDocument.links[idx]?.$id ?? undefined,
-            url: link.url,
-            password: link.password
-              ? bcrypt.hashSync(link.password, SALT_ROUNDS)
-              : null
-          })) ?? linkDocument.links
+        links: linksToSave
       }
     );
 
@@ -429,7 +415,7 @@ export async function editLinkById(
         links: updatedLink.links.map(
           ({ $id, url }: { $id: string; url: string }) => ({
             id: $id,
-            url
+            url: decrypt(url)
           })
         ),
         activeAt: updatedLink.activeAt
@@ -438,14 +424,11 @@ export async function editLinkById(
         deleteAt: updatedLink.deleteAt
           ? new Date(updatedLink.deleteAt)
           : undefined,
-        shortenedLink: decrypt(
-          updatedLink.shortenedLinkEncrypted ??
-            `${NEXT_PUBLIC_BASE_URL}/${updatedLink.code}`
-        ),
+        shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${updatedLink.code}`,
         createdAt: new Date(updatedLink.$createdAt),
         isProtectedByPassword: Boolean(updatedLink.links[0].password),
         isSmartLink: Boolean(updatedLink.links.length > 1),
-        originalLink: updatedLink.links[0].url,
+        originalLink: decrypt(updatedLink.links[0].url),
         code: updatedLink.code,
         tags: updatedLink.tags,
         maxVisits: updatedLink.maxVisits,

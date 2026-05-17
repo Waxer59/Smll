@@ -2,6 +2,7 @@ import { PasswordProtection } from '@/components/password-protection';
 import { getShortenedLinkByCode } from '@/lib/server/linkDocument';
 import { notFound, redirect, RedirectType } from 'next/navigation';
 import { accessLink } from '@/lib/server/accessLink';
+import { decrypt } from '@/lib/server/encryption';
 
 export const revalidate = 0;
 
@@ -24,7 +25,7 @@ export default async function Page({
   }
 
   if (!havePassword) {
-    redirect(link.links[0].url, RedirectType.replace);
+    redirect(decrypt(link.links[0].url), RedirectType.replace);
   }
 
   return <PasswordProtection code={code} />;
