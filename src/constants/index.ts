@@ -50,3 +50,6 @@ export const MONTHS = [
   'November',
   'December'
 ];
+
+// Appwrite error types
+export const USER_MORE_FACTORS_REQUIRED = 'user_more_factors_required';

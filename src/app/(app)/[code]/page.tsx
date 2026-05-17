@@ -6,11 +6,9 @@ import { decrypt } from '@/lib/server/encryption';
 
 export const revalidate = 0;
 
-export default async function Page({
-  params: { code }
-}: {
-  params: { code: string };
-}) {
+export default async function Page({ params }: { params: { code: string } }) {
+  const { code } = await params;
+
   const link = await getShortenedLinkByCode(code);
 
   if (!link) {

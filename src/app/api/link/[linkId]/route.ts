@@ -12,12 +12,13 @@ import { z } from 'zod';
 export const revalidate = 0;
 
 interface Params {
-  params: {
+  params: Promise<{
     linkId: string;
-  };
+  }>;
 }
 
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(request: NextRequest, props: Params) {
+  const params = await props.params;
   const linkId = params.linkId;
   const bearerToken = getJwtFromHeader(request.headers.get('Authorization'));
   let userId;
@@ -34,7 +35,8 @@ export async function GET(request: NextRequest, { params }: Params) {
   return NextResponse.json({ link });
 }
 
-export async function PATCH(request: NextRequest, { params }: Params) {
+export async function PATCH(request: NextRequest, props: Params) {
+  const params = await props.params;
   const body = await request.json();
   const linkId = params.linkId;
   const requestSchema = z.object({
@@ -68,7 +70,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   return NextResponse.json({ success: true }, { status: 200 });
 }
 
-export async function DELETE(request: NextRequest, { params }: Params) {
+export async function DELETE(request: NextRequest, props: Params) {
+  const params = await props.params;
   const linkId = params.linkId;
   const bearerToken = getJwtFromHeader(request.headers.get('Authorization'));
   let userId;

@@ -112,18 +112,26 @@ export async function getUserShortenedLinks(
         tags,
         activeAt: activeAt ? new Date(activeAt) : undefined,
         deleteAt: deleteAt ? new Date(deleteAt) : undefined,
-        links: linksDocument?.map(
-          ({ $id, url }: { $id: string; url: string }) => ({
-            id: $id,
-            url: decrypt(url)
-          })
-        ),
+        links: linksDocument?.map((ld: any) => ({
+          id: ld.$id,
+          url: decrypt(ld.url),
+          password: ld.password ?? null
+        })),
         shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${code}`,
-        isProtectedByPassword: Boolean(linksDocument[0]?.password),
-        isSmartLink: Boolean(linksDocument.length > 1),
+        isProtectedByPassword: Boolean(linksDocument?.[0]?.password),
+        isSmartLink: Boolean((linksDocument?.length ?? 0) > 1),
         maxVisits,
-        originalLink: decrypt(linksDocument[0].url),
-        metrics
+        originalLink: linksDocument?.[0] ? decrypt(linksDocument[0].url) : '',
+        metrics: Array.isArray(metrics)
+          ? metrics.map((m: any) => ({
+              $id: m.$id,
+              createdAt: m.$createdAt,
+              views: m.views,
+              year: m.year,
+              month: m.month,
+              linkId: m.linkId
+            }))
+          : []
       })
     );
   } catch (error) {

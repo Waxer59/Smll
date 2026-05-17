@@ -74,7 +74,6 @@ export const ShortenedLink: React.FC<Props> = ({ link }) => {
       loading: `${isEnabled ? 'Disabling' : 'Enabling'} link...`,
       success: (data) => {
         setIsUpdatingLink(false);
-        console.log(data);
         if (!data.success) {
           toast.error('Failed to save link.');
           return;

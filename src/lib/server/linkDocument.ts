@@ -66,7 +66,7 @@ export async function getShortenedLinkByCode(
     const link = await database.listRows({
       databaseId: APPWRITE_DATABASES.link_shortener,
       tableId: APPWRITE_COLLECTIONS.shortened_links,
-      queries: [Query.equal('code', code)]
+      queries: [Query.equal('code', code), Query.select(['*', 'links.*'])]
     });
 
     if (link.total === 0) {
@@ -130,7 +130,8 @@ export async function getShortenedLinkById(
     const link = await database.getRow({
       databaseId: APPWRITE_DATABASES.link_shortener,
       tableId: APPWRITE_COLLECTIONS.shortened_links,
-      rowId: id
+      rowId: id,
+      queries: [Query.select(['*', 'links.*'])]
     });
 
     if (!link) {
@@ -433,7 +434,16 @@ export async function editLinkById(
         tags: updatedLink.tags,
         maxVisits: updatedLink.maxVisits,
         isEnabled: updatedLink.isEnabled,
-        metrics: updatedLink.metrics
+        metrics: Array.isArray(updatedLink.metrics)
+          ? updatedLink.metrics.map((m: any) => ({
+              $id: m.$id,
+              createdAt: m.$createdAt,
+              views: m.views,
+              year: m.year,
+              month: m.month,
+              linkId: m.linkId
+            }))
+          : []
       }
     };
   } catch (error) {

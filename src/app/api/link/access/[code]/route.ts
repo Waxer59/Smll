@@ -8,8 +8,9 @@ export const revalidate = 0;
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  props: { params: Promise<{ code: string }> }
 ) {
+  const params = await props.params;
   const code = params.code;
   const link = await getShortenedLinkByCode(code);
 
