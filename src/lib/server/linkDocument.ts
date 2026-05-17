@@ -117,7 +117,7 @@ export async function getShortenedLinkById(
   if (!userId) {
     const user = await getLoggedInUser();
 
-    if (!user || user === 'MFA') {
+    if (!user) {
       return null;
     }
 
@@ -162,7 +162,7 @@ export async function createShortenedLink(
   if (!userId) {
     const user = await getLoggedInUser();
 
-    if (!user || user === 'MFA') {
+    if (!user) {
       return {
         success: false,
         errors: ['You must be logged in to create a link or use a token.']
@@ -279,7 +279,7 @@ export async function deleteLinkById(
   if (!userId) {
     const user = await getLoggedInUser();
 
-    if (!user || user === 'MFA') {
+    if (!user) {
       return {
         success: false,
         errors: ['You must be logged in to create a link or use a token.']
@@ -337,7 +337,7 @@ export async function editLinkById(
   if (!userId) {
     const user = await getLoggedInUser();
 
-    if (!user || user === 'MFA') {
+    if (!user) {
       return {
         success: false,
         errors: ['You must be logged in to create a link or use a token.']

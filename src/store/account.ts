@@ -7,7 +7,6 @@ interface State {
   email: string;
   tokens: TokenDetails[];
   hasEmailVerification: boolean;
-  hasMFA: boolean;
   isPasswordlessAccount: boolean;
 }
 
@@ -19,14 +18,12 @@ interface Actions {
   setTokens: (tokens: TokenDetails[]) => void;
   addToken: (token: TokenDetails) => void;
   deleteToken: (token: string) => void;
-  setHasMFA: (hasMFA: boolean) => void;
   clear(): void;
 }
 
 const initialState: State = {
   name: '',
   email: '',
-  hasMFA: false,
   isPasswordlessAccount: false,
   hasEmailVerification: true,
   tokens: []
@@ -41,7 +38,7 @@ export const useAccountStore = create<State & Actions>()(
       set({ isPasswordlessAccount }),
     setHasEmailVerification: (hasEmailVerification) =>
       set({ hasEmailVerification }),
-    setHasMFA: (hasMFA) => set({ hasMFA }),
+
     setTokens: (tokens) => set({ tokens }),
     addToken: (token) =>
       set((state) => ({

@@ -15,9 +15,7 @@ import {
 } from '@/lib/server/appwrite-functions/auth';
 import { useAccountStore } from '@/store/account';
 import { useLinksStore } from '@/store/links';
-import { LinkDetails, RequireMFA, TokenDetails } from '@/types';
 import { useRouter } from 'next/navigation';
-import { Models } from 'appwrite';
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
 
@@ -35,7 +33,6 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
   const setIsPasswordlessAccount = useAccountStore(
     (state) => state.setIsPasswordlessAccount
   );
-  const setHasMFA = useAccountStore((state) => state.setHasMFA);
   const setTokens = useAccountStore((state) => state.setTokens);
   const router = useRouter();
 
@@ -44,37 +41,25 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
     const hasVerifiedEmail = url.searchParams.get('verified') === 'true';
 
     async function initAccountStore() {
-      const userData: [
-        Promise<Promise<Models.User<Models.Preferences>> | RequireMFA | null>,
-        Promise<LinkDetails[] | null>,
-        Promise<TokenDetails[] | null>,
-        Promise<Models.Session | null>
-      ] = [
-        getLoggedInUser(),
-        getUserShortenedLinks(),
-        getUserTokens(),
-        getUserAccountSession()
-      ];
-
       try {
-        const resolvedUserData = await Promise.all(userData);
         const [user, accountLinks, accountTokens, userAccountSession] =
-          resolvedUserData;
+          await Promise.all([
+            getLoggedInUser(),
+            getUserShortenedLinks(),
+            getUserTokens(),
+            getUserAccountSession()
+          ]);
 
         if (!user || !userAccountSession) {
           router.push('/');
-          return;
-        } else if (user === 'MFA') {
-          router.push('/mfa');
           return;
         }
 
         setLinks(accountLinks ?? []);
         setTokens(accountTokens ?? []);
-        setName(user.name);
-        setHasMFA(user.mfa);
-        setEmail(user.email);
-        setHasEmailVerification(user.emailVerification);
+        setName(user.name!);
+        setEmail(user.email!);
+        setHasEmailVerification(user.emailVerification!);
         setIsPasswordlessAccount(
           userAccountSession.provider === APPWRITE_PROVIDERS.oauth2 ||
             userAccountSession.provider === APPWRITE_PROVIDERS.magicUrl
@@ -115,7 +100,6 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
     setHasEmailVerification,
     setIsPasswordlessAccount,
     setName,
-    setHasMFA,
     setTokens,
     setLinks
   ]);

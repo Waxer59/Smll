@@ -19,10 +19,9 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-const formSchema = z.object({
+const baseFormSchema = z.object({
   name: z.string().max(128).optional(),
-  email: z.string().email().optional(),
-  password: z.string()
+  email: z.string().email().optional()
 });
 
 export const ProfileSettingsCard = () => {
@@ -55,18 +54,21 @@ export const ProfileSettingsCard = () => {
     const formData = new FormData(e.currentTarget);
     let hasUpdatingErrors = false;
 
-    // Password is only required if the email is being updated
-    if (editedEmail !== email) {
-      formSchema.refine((data) => data.password);
-    }
+    // Require password only when the email is changed
+    const passwordIsRequired = editedEmail !== email;
+    const schema = baseFormSchema.extend({
+      password: passwordIsRequired ? z.string().min(8) : z.string().optional()
+    });
 
-    const { error, data } = formSchema.safeParse({
+    const passwordValue = formData.get('password');
+    const { error, data } = schema.safeParse({
       name: editedName,
       email: editedEmail,
-      password: formData.get('password')
+      password: passwordValue === null ? undefined : String(passwordValue)
     });
 
     if (error) {
+      console.log(error);
       toast.error('Something went wrong.');
       setIsUpdateLoading(false);
       return;
@@ -86,7 +88,7 @@ export const ProfileSettingsCard = () => {
     }
 
     if (editedEmail !== email) {
-      const newEmail = await updateEmail(editedEmail, password);
+      const newEmail = await updateEmail(editedEmail, password!);
 
       if (newEmail) {
         setEmail(newEmail);

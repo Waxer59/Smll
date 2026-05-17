@@ -7,7 +7,6 @@ export type User = {
   $id: string;
   name?: string;
   email?: string;
-  mfa?: boolean;
   emailVerification?: boolean;
 };
 
@@ -53,8 +52,6 @@ export interface TokenDetails {
   id: string;
   token: string;
 }
-
-export type RequireMFA = 'MFA';
 
 export interface OperationResult {
   success: boolean;

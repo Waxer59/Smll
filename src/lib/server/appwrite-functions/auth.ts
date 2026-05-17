@@ -2,9 +2,9 @@
 
 import { Cookies, APPWRITE_DATABASES, APPWRITE_COLLECTIONS } from '@/constants';
 import { cookies } from 'next/headers';
-import { Models, Query, ID, AuthenticationFactor } from 'appwrite';
+import { Models, Query, ID } from 'appwrite';
 import { createSessionClient, createAdminClient } from '../appwrite';
-import { User, RequireMFA } from '@/types';
+import { User } from '@/types';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -24,7 +24,7 @@ export async function sendVerificationEmail() {
   }
 }
 
-export async function getLoggedInUser(): Promise<User | RequireMFA | null> {
+export async function getLoggedInUser(): Promise<User | null> {
   const sessionClient = await createSessionClient();
 
   if (!sessionClient) {
@@ -35,19 +35,13 @@ export async function getLoggedInUser(): Promise<User | RequireMFA | null> {
 
   try {
     const user = await account.get();
-
     return {
       $id: user.$id,
       name: (user as any).name,
       email: (user as any).email,
-      mfa: (user as any).mfa,
       emailVerification: (user as any).emailVerification
     };
   } catch (error: any) {
-    if (error.type === 'user_more_factors_required') {
-      return 'MFA';
-    }
-
     return null;
   }
 }
@@ -90,51 +84,7 @@ export async function loginUser(
     return false;
   }
 
-  return !!session;
-}
-
-export async function createMFAChallenge(): Promise<string | null> {
-  const sessionClient = await createSessionClient();
-
-  if (!sessionClient) {
-    return null;
-  }
-
-  const { account } = sessionClient;
-  let challengeId = null;
-
-  try {
-    const challenge = await account.createMfaChallenge(
-      AuthenticationFactor.Email
-    );
-    challengeId = challenge.$id;
-  } catch (error) {
-    console.log(error);
-  }
-
-  return challengeId;
-}
-
-export async function createMFARecoveryChallenge(): Promise<string | null> {
-  const sessionClient = await createSessionClient();
-
-  if (!sessionClient) {
-    return null;
-  }
-
-  const { account } = sessionClient;
-  let challengeId = null;
-
-  try {
-    const challenge = await account.createMfaChallenge(
-      AuthenticationFactor.Recoverycode
-    );
-    challengeId = challenge.$id;
-  } catch (error) {
-    console.log(error);
-  }
-
-  return challengeId;
+  return Boolean(session);
 }
 
 export async function registerUser(
@@ -174,45 +124,7 @@ export async function loginWithMagicLink(email: string): Promise<boolean> {
     return false;
   }
 
-  return !!token;
-}
-
-export async function disableAccountMFA() {
-  const sessionClient = await createSessionClient();
-
-  if (!sessionClient) {
-    return;
-  }
-
-  const { account } = sessionClient;
-
-  try {
-    await account.updateMFA(false);
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-export async function enableAccountMFA(): Promise<string[] | null> {
-  const sessionClient = await createSessionClient();
-
-  if (!sessionClient) {
-    return null;
-  }
-
-  const { account } = sessionClient;
-  let recoveryCodes: string[] = [];
-
-  try {
-    const mfa = await account.createMfaRecoveryCodes();
-    recoveryCodes = mfa.recoveryCodes;
-  } catch (error) {
-    console.log(error);
-  }
-
-  await account.updateMFA(true);
-
-  return recoveryCodes;
+  return Boolean(token);
 }
 
 export async function resetPassword(email: string) {
@@ -304,44 +216,9 @@ export async function getUserAccountSession(): Promise<{
   const { account } = sessionClient;
 
   try {
-    const session = await account.getSession('current');
+    const session = await account.getSession({ sessionId: 'current' });
     return { provider: (session as any).provider };
   } catch (error) {
     return null;
-  }
-}
-
-export async function verifyMFA(
-  challengeId: string,
-  code: string
-): Promise<boolean> {
-  const sessionClient = await createSessionClient();
-
-  if (!sessionClient) {
-    return false;
-  }
-
-  const { account } = sessionClient;
-
-  try {
-    // Verify MFA challenge
-    await account.updateMfaChallenge(challengeId, code);
-
-    // IMPORTANT:
-    // Refresh current session after MFA verification
-    const session = await account.getSession('current');
-
-    // Update cookie with the upgraded MFA session secret
-    (await cookies()).set(Cookies.session, session.secret, {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: process.env.NODE_ENV === 'production'
-    });
-
-    return true;
-  } catch (error) {
-    console.log(error);
-    return false;
   }
 }

@@ -4,8 +4,6 @@ export const SALT_ROUNDS = 10;
 export const LONG_LINK_EXAMPLE =
   'https://verylonglink.com/abc123?is=verylong&really=long&iSaid=itwasReallyLong';
 export const AUTH_PATHNAMES = [
-  '/mfa',
-  '/mfa-recovery',
   '/magic-link',
   '/login',
   '/register',
@@ -52,4 +50,4 @@ export const MONTHS = [
 ];
 
 // Appwrite error types
-export const USER_MORE_FACTORS_REQUIRED = 'user_more_factors_required';
+// NOTE: MFA removed from the app; the constant for Appwrite MFA is no longer used.

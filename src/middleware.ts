@@ -9,17 +9,9 @@ export default async function middleware(request: NextRequest) {
   basePathname = `/${basePathname}`;
 
   const user = await getLoggedInUser();
-
   // Redirect to dashboard if the user is logged in
   if (AUTH_PATHNAMES.includes(basePathname)) {
-    const isMfaRoute =
-      basePathname === '/mfa' || basePathname === '/mfa-recovery';
-
-    if (isMfaRoute && user === 'MFA') {
-      return;
-    } else if (user === 'MFA') {
-      return NextResponse.redirect(new URL('/mfa', request.url));
-    } else if (user && basePathname !== '/dashboard') {
+    if (user && basePathname !== '/dashboard') {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
