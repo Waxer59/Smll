@@ -8,21 +8,6 @@ import { TokenDetails } from '@/types';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export async function updateUserPrefs(
-  userId: string,
-  prefs: Record<string, any>
-): Promise<Models.User<Models.Preferences>> {
-  const { users } = await createAdminClient();
-  return await users.updatePrefs(userId, prefs);
-}
-
-export async function getUserByEmail(
-  email: string
-): Promise<Models.UserList<Models.Preferences>> {
-  const { users } = await createAdminClient();
-  return await users.list([Query.equal('email', email)]);
-}
-
 export async function getUserById(
   userId: string
 ): Promise<Models.User<Models.Preferences>> {
