@@ -1,6 +1,7 @@
 import { getLinkByPassword } from '@/helpers/getLinkByPassword';
 import { accessLink } from '@/lib/server/accessLink';
 import { getShortenedLinkByCode } from '@/lib/server/linkDocument';
+import { SingleLinkDetails } from '@/types';
 import { notFound } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -39,7 +40,10 @@ export async function POST(
     );
   }
 
-  const linkFound = await getLinkByPassword(link.links, passwordGiven);
+  const linkFound = await getLinkByPassword(
+    link.links as SingleLinkDetails[],
+    passwordGiven
+  );
 
   if (!linkFound) {
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
