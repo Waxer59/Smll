@@ -4,10 +4,10 @@ import { AuthCardLayout } from '@/layouts/auth-card-layout';
 import { TextInput, Button, Anchor } from '@mantine/core';
 import { AtSign, CircleCheck } from 'lucide-react';
 import { z } from 'zod';
-import Link from 'next/link';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { loginWithMagicLink } from '@/lib/server/appwrite-functions/auth';
+import Link from 'next/link';
 
 const formSchema = z.object({
   email: z.string().email()

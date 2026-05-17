@@ -5,9 +5,9 @@ import { Button, Anchor, PasswordInput } from '@mantine/core';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
-import Link from 'next/link';
 import { toast } from 'sonner';
 import { account } from '@/lib/client/appwrite';
+import Link from 'next/link';
 
 const formSchema = z.object({
   password: z.string().min(8),

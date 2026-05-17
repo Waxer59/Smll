@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/client/utils';
 import AnimatedGridPattern from '../magicui/animated-grid-pattern';
 import ShimmerLink from '../magicui/shimmer-link';
 

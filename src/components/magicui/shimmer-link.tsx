@@ -1,6 +1,6 @@
 import React, { CSSProperties } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/client/utils';
 import Link from 'next/link';
 
 export interface ShimmerLinkProps {

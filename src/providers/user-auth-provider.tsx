@@ -16,7 +16,7 @@ import {
 import { useAccountStore } from '@/store/account';
 import { useLinksStore } from '@/store/links';
 import { useRouter } from 'next/navigation';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 interface Props {
