@@ -7,6 +7,7 @@ interface State {
   links: LinkDetails[];
   editLinkId: string | null;
   qrLinkId: string | null;
+  isLoading: boolean;
 }
 
 interface Actions {
@@ -18,6 +19,7 @@ interface Actions {
   editLinkById: (linkId: string, link: LinkDetails) => void;
   addLink: (link: LinkDetails) => void;
   removeLinkById: (linkId: string) => void;
+  setIsLoading: (isLoading: boolean) => void;
   clear(): void;
 }
 
@@ -25,7 +27,8 @@ const initialState: State = {
   editLinkId: null,
   qrLinkId: null,
   tags: [],
-  links: []
+  links: [],
+  isLoading: false
 };
 
 export const useLinksStore = create<State & Actions>()(
@@ -50,6 +53,7 @@ export const useLinksStore = create<State & Actions>()(
     addLink: (link) =>
       set((state) => ({
         links: [...state.links, link]
-      }))
+      })),
+    setIsLoading: (isLoading) => set({ isLoading })
   }))
 );

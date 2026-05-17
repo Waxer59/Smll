@@ -3,12 +3,14 @@ import { ShortenedLink } from './shortened-link';
 import { LinkDetails } from '@/types';
 import { CreateLink } from './create-link';
 import { useState } from 'react';
+import { LoadingLink } from './loading-link';
 
 interface Props {
   links?: LinkDetails[];
+  isLoading?: boolean;
 }
 
-export const ShortenedLinks: React.FC<Props> = ({ links }) => {
+export const ShortenedLinks: React.FC<Props> = ({ links, isLoading }) => {
   const linksTags = links?.map((link) => link.tags).flat();
   const [filterTags, setFilterTags] = useState<string[]>([]);
 
@@ -37,6 +39,11 @@ export const ShortenedLinks: React.FC<Props> = ({ links }) => {
         <li className="h-72 flex-1 md:max-w-[300px]">
           <CreateLink />
         </li>
+        {isLoading && (
+          <li className="h-72 w-full md:flex-1 md:max-w-md">
+            <LoadingLink />
+          </li>
+        )}
         {filteredLinks?.map((link) => (
           <li key={link.id} className="h-72 w-full md:flex-1 md:max-w-lg">
             <ShortenedLink link={link} />

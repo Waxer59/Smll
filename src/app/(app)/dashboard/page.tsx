@@ -5,6 +5,7 @@ import { LinksStats } from '@/components/dashboard/links-stats';
 import { useLinksStore } from '@/store/links';
 
 export default function Page() {
+  const areLinksLoading = useLinksStore((state) => state.isLoading);
   const links = useLinksStore((state) => state.links);
   const activeLinks = links.filter((link) => link.isEnabled).length;
 
@@ -15,7 +16,7 @@ export default function Page() {
         activeLinks={activeLinks}
         inactiveLinks={links.length - activeLinks}
       />
-      <ShortenedLinks links={links} />
+      <ShortenedLinks links={links} isLoading={areLinksLoading} />
     </div>
   );
 }

@@ -7,9 +7,9 @@ export const AUTH_PATHNAMES = [
   '/magic-link',
   '/login',
   '/register',
-  '/forgot-password',
-  '/dashboard'
+  '/forgot-password'
 ];
+export const PRIVATE_PATHNAMES = ['/dashboard'];
 export enum BROADCAST_CHANNEL {
   auth = 'auth',
   logout = 'logout'

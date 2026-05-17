@@ -24,6 +24,7 @@ interface Props {
 }
 
 export const UserAuthProvider: React.FC<Props> = ({ children }) => {
+  const setLinksLoading = useLinksStore((state) => state.setIsLoading);
   const setLinks = useLinksStore((state) => state.setLinks);
   const setName = useAccountStore((state) => state.setName);
   const setEmail = useAccountStore((state) => state.setEmail);
@@ -39,6 +40,7 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
   useEffect(() => {
     const url = new URL(window.location.href);
     const hasVerifiedEmail = url.searchParams.get('verified') === 'true';
+    setLinksLoading(true);
 
     async function initAccountStore() {
       try {
@@ -64,9 +66,9 @@ export const UserAuthProvider: React.FC<Props> = ({ children }) => {
           userAccountSession.provider === APPWRITE_PROVIDERS.oauth2 ||
             userAccountSession.provider === APPWRITE_PROVIDERS.magicUrl
         );
+        setLinksLoading(false);
       } catch (error) {
         toast.error('There was an error while loading your account.');
-        await closeAllSessions();
         logoutUser();
         router.push('/');
         return;
