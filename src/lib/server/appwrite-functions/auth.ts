@@ -73,7 +73,7 @@ export async function loginUser(
   try {
     session = await account.createEmailPasswordSession(email, password);
 
-    cookies().set(Cookies.session, session.secret, {
+    (await cookies()).set(Cookies.session, session.secret, {
       path: '/',
       httpOnly: true,
       sameSite: 'strict',
@@ -151,7 +151,7 @@ export async function registerUser(
 }
 
 export async function logoutUser() {
-  cookies().delete(Cookies.session);
+  (await cookies()).delete(Cookies.session);
 }
 
 export async function loginWithMagicLink(
@@ -318,11 +318,24 @@ export async function verifyMFA(
   const { account } = sessionClient;
 
   try {
+    // Verify MFA challenge
     await account.updateMfaChallenge(challengeId, code);
+
+    // IMPORTANT:
+    // Refresh current session after MFA verification
+    const session = await account.getSession('current');
+
+    // Update cookie with the upgraded MFA session secret
+    (await cookies()).set(Cookies.session, session.secret, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production'
+    });
+
+    return true;
   } catch (error) {
     console.log(error);
     return false;
   }
-
-  return true;
 }

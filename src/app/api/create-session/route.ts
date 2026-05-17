@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(request.nextUrl.origin);
   }
 
-  cookies().set(Cookies.session, session.secret, {
+  (await cookies()).set(Cookies.session, session.secret, {
     path: '/',
     httpOnly: true,
     sameSite: 'lax',

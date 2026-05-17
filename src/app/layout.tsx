@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
-import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import {
+  ColorSchemeScript,
+  MantineProvider,
+  mantineHtmlProps
+} from '@mantine/core';
 import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { Toaster } from 'sonner';
@@ -67,7 +71,7 @@ export default function RootLayout({
   auth: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" {...mantineHtmlProps}>
       <head>
         <ColorSchemeScript />
       </head>

@@ -19,6 +19,7 @@ import { createAdminClient } from './appwrite';
 import { getLoggedInUser } from './appwrite-functions/auth';
 import bcrypt from 'bcrypt';
 import { isLinkCorrect } from '@/helpers/isLinkCorrect';
+import { encrypt, decrypt } from './encryption';
 
 const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -70,7 +71,19 @@ export async function getShortenedLinkByCode(
       return null;
     }
 
-    return link.documents[0];
+    const doc = link.documents[0];
+
+    if (doc && doc.shortenedLinkEncrypted) {
+      try {
+        doc.shortenedLink = decrypt(doc.shortenedLinkEncrypted);
+      } catch (err) {
+        console.warn('Failed to decrypt shortened link for code', code, err);
+      }
+    } else if (doc) {
+      doc.shortenedLink = `${NEXT_PUBLIC_BASE_URL}/${doc.code}`;
+    }
+
+    return doc;
   } catch (error) {
     console.log(error);
   }
@@ -90,7 +103,21 @@ export async function getAllShortenedLinksFromUser(
       [Query.equal('creatorId', userId)]
     );
 
-    return links.documents;
+    // Decrypt shortened link for each document
+    return links.documents.map((doc: any) => {
+      if (doc && doc.shortenedLinkEncrypted) {
+        try {
+          doc.shortenedLink = decrypt(doc.shortenedLinkEncrypted);
+        } catch (err) {
+          console.warn('Failed to decrypt shortened link for id', doc.$id, err);
+          doc.shortenedLink = `${NEXT_PUBLIC_BASE_URL}/${doc.code}`;
+        }
+      } else {
+        doc.shortenedLink = `${NEXT_PUBLIC_BASE_URL}/${doc.code}`;
+      }
+
+      return doc;
+    });
   } catch (error) {
     return [];
   }
@@ -121,6 +148,17 @@ export async function getShortenedLinkById(
 
     if (!link) {
       return null;
+    }
+
+    if (link && link.shortenedLinkEncrypted) {
+      try {
+        (link as any).shortenedLink = decrypt(link.shortenedLinkEncrypted);
+      } catch (err) {
+        console.warn('Failed to decrypt shortened link for id', id, err);
+        (link as any).shortenedLink = `${NEXT_PUBLIC_BASE_URL}/${link.code}`;
+      }
+    } else {
+      (link as any).shortenedLink = `${NEXT_PUBLIC_BASE_URL}/${link.code}`;
     }
 
     return link;
@@ -208,7 +246,8 @@ export async function createShortenedLink(
       {
         ...link,
         code: uniqueCode,
-        creatorId: userId
+        creatorId: userId,
+        shortenedLinkEncrypted: encrypt(`${NEXT_PUBLIC_BASE_URL}/${uniqueCode}`)
       }
     );
 
@@ -230,7 +269,10 @@ export async function createShortenedLink(
         deleteAt: linkDocument.deleteAt,
         isEnabled: true,
         originalLink: link.links[0].url,
-        shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${uniqueCode}`,
+        shortenedLink: decrypt(
+          linkDocument.shortenedLinkEncrypted ??
+            `${NEXT_PUBLIC_BASE_URL}/${uniqueCode}`
+        ),
         createdAt: new Date($createdAt),
         isProtectedByPassword: Boolean(link.links[0].password),
         isSmartLink: Boolean(link.links.length > 1),
@@ -358,12 +400,16 @@ export async function editLinkById(
   }
 
   try {
+    const newCode = link.code ?? linkDocument.code;
+
     const updatedLink = await database.updateDocument(
       APPWRITE_DATABASES.link_shortener,
       APPWRITE_COLLECTIONS.shortened_links,
       linkId,
       {
         ...link,
+        code: newCode,
+        shortenedLinkEncrypted: encrypt(`${NEXT_PUBLIC_BASE_URL}/${newCode}`),
         links:
           link?.links?.map((link, idx) => ({
             $id: linkDocument.links[idx]?.$id ?? undefined,
@@ -392,7 +438,10 @@ export async function editLinkById(
         deleteAt: updatedLink.deleteAt
           ? new Date(updatedLink.deleteAt)
           : undefined,
-        shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${updatedLink.code}`,
+        shortenedLink: decrypt(
+          updatedLink.shortenedLinkEncrypted ??
+            `${NEXT_PUBLIC_BASE_URL}/${updatedLink.code}`
+        ),
         createdAt: new Date(updatedLink.$createdAt),
         isProtectedByPassword: Boolean(updatedLink.links[0].password),
         isSmartLink: Boolean(updatedLink.links.length > 1),

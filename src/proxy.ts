@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { AUTH_PATHNAMES } from './constants';
 import { getLoggedInUser } from './lib/server/appwrite-functions/auth';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   let [basePathname] = pathname.split('/').slice(1);
   basePathname = `/${basePathname}`;

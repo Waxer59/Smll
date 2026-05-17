@@ -26,7 +26,7 @@ export async function createSessionClient(token?: string) {
     .setEndpoint(NEXT_PUBLIC_APPWRITE_ENDPOINT)
     .setProject(NEXT_PUBLIC_APPWRITE_PROJECT_ID);
 
-  const cookieSession = token ?? cookies().get(Cookies.session)?.value;
+  const cookieSession = token ?? (await cookies()).get(Cookies.session)?.value;
 
   if (cookieSession) {
     client.setSession(cookieSession);

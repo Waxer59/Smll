@@ -69,6 +69,10 @@ export const MfaVerification: React.FC = () => {
     isChallengeCreated = true;
   }, [startMFAChallenge]);
 
+  useEffect(() => {
+    toast.success('MFA code sent!');
+  }, []);
+
   return (
     <AuthCardLayout title="MFA Verification">
       <div className="flex flex-col items-center gap-4 w-full mt-4">

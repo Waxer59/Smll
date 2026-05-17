@@ -13,19 +13,15 @@ export const LinksStats: React.FC<Props> = ({ activeLinks, inactiveLinks }) => {
 
   const getData = () => {
     const currentYear = new Date().getFullYear();
-    const months = new Array(MONTHS.length)
-      .fill(0)
-      .map((_, i) => currentYear - i);
-    return months.map((month, idx) => {
-      const monthName = MONTHS[idx];
-      const monthData = links.filter((link) =>
-        link.metrics.find((m) => m.month === idx)
-      );
 
-      const totalViews = monthData.reduce(
-        (acc, curr) => acc + curr.metrics.reduce((a, b) => a + b.views, 0),
-        0
-      );
+    return MONTHS.map((monthName, idx) => {
+      const totalViews = links.reduce((acc, link) => {
+        const metric = link.metrics.find(
+          (m) => m.year === currentYear && m.month === idx
+        );
+
+        return acc + (metric ? metric.views : 0);
+      }, 0);
 
       return {
         month: monthName,
@@ -33,8 +29,6 @@ export const LinksStats: React.FC<Props> = ({ activeLinks, inactiveLinks }) => {
       };
     });
   };
-
-  console.log(getData());
 
   return (
     <>

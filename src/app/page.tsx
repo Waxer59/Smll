@@ -1,7 +1,6 @@
 import Features from '@/components/landing/features';
 import Hero from '@/components/landing/hero';
 import { VelocityScroll } from '@/components/magicui/scroll-based-velocity';
-import React from 'react';
 
 export default function Page() {
   return (
