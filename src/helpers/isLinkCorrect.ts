@@ -59,8 +59,7 @@ export function isLinkCorrect(
   // If one link have password, then all links must have password
   const havePassword = link.links && link.links.some((link) => link.password);
   const haveAllLinksPasswords =
-    link.links &&
-    link.links.every((link) => link.password || !link.shouldUpdatePassword);
+    link.links && link.links.every((link) => link.password);
 
   if (havePassword && !haveAllLinksPasswords) {
     errors.push(
