@@ -11,13 +11,14 @@ import {
   Button
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
-import { Minus, Plus, MousePointerClick } from 'lucide-react';
+import { Minus, Plus, MousePointerClick, Undo } from 'lucide-react';
 import { useState } from 'react';
 import {
   CreateLinkDetails,
   LinkDetails,
-  SingleLinkDetails
-} from '../../types/index';
+  SingleLinkDetails,
+  SmartLinkDetails
+} from '@/types';
 import { LONG_LINK_EXAMPLE } from '@/constants';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -27,7 +28,8 @@ const formSchema = z.object({
   links: z.array(
     z.object({
       url: z.string().url(),
-      password: z.string().optional()
+      password: z.string().optional(),
+      shouldUpdatePassword: z.boolean().optional()
     })
   ),
   deleteAt: z.date().optional(),
@@ -36,10 +38,6 @@ const formSchema = z.object({
   tags: z.string().array().optional(),
   code: z.string().optional()
 });
-
-interface SmartLinkDetails extends SingleLinkDetails {
-  id: string;
-}
 
 interface Props {
   link?: LinkDetails;
@@ -59,6 +57,8 @@ export const NewLinkModal: React.FC<Props> = ({
   link
 }) => {
   const [mainLink, setMainLink] = useState(link?.links[0].url ?? '');
+  const [shouldUpdateMainLinkPassword, setShouldUpdateMainLinkPassword] =
+    useState(false);
   const [mainPassword, setMainPassword] = useState('');
   const [smartLinks, setSmartLinks] = useState<SmartLinkDetails[]>(
     link?.links
@@ -104,7 +104,8 @@ export const NewLinkModal: React.FC<Props> = ({
       {
         id: newId,
         url: '',
-        password: ''
+        password: '',
+        isNew: true
       }
     ]);
   };
@@ -123,17 +124,41 @@ export const NewLinkModal: React.FC<Props> = ({
       activeAt = activeDate;
     }
 
+    const links = [
+      {
+        url: mainLink,
+        password: mainPassword,
+        // If the main link is protected by password and user didn't choose to remove it, we should update the password with the new one (even if it's empty, which means removing the password). Otherwise, we should keep the current password without updating it.
+        shouldUpdatePassword: Boolean(link?.isProtectedByPassword)
+          ? shouldUpdateMainLinkPassword
+          : true
+      },
+      ...smartLinks.map((smartLink) => ({
+        url: smartLink.url,
+        password: smartLink.password,
+        shouldUpdatePassword:
+          // If the main link is protected by password and user didn't choose to remove it, we should update the password with the new one (even if it's empty, which means removing the password). Otherwise, we should keep the current password without updating it.
+          Boolean(link?.isProtectedByPassword) && !smartLink.isNew
+            ? smartLink.shouldUpdatePassword
+            : true
+      }))
+    ];
+
+    // TODO check for unique passwords
+    if (isEditing) {
+      //...
+    } else {
+      const arellLinksPasswordsUnique =
+        new Set(links.map((l) => l.password)).size === links.length;
+
+      if (!arellLinksPasswordsUnique) {
+        toast.error('All links passwords must be unique.');
+        return;
+      }
+    }
+
     const { success, data, error } = formSchema.safeParse({
-      links: [
-        {
-          url: mainLink,
-          password: mainPassword
-        },
-        ...smartLinks.map((link) => ({
-          url: link.url,
-          password: link.password
-        }))
-      ],
+      links: links,
       maxVisits: maxClicks === 0 || maxClicks === null ? undefined : maxClicks,
       activeAt,
       deleteAt,
@@ -190,62 +215,121 @@ export const NewLinkModal: React.FC<Props> = ({
                 radius="md"
                 required
               />
-              <PasswordInput
-                required={isSmartPassword}
-                value={mainPassword}
-                onChange={(e) => setMainPassword(e.target.value)}
-                label="Password"
-                name="mainPassword"
-                placeholder="Password"
-                className="flex-1"
-                description="Password to protect the link"
-                size="md"
-                radius="md"
-              />
-            </li>
-            {smartLinks.map(({ id, url, password }) => (
-              <li className="flex items-end gap-2 w-full" key={id}>
-                <div className="flex items-end gap-2 w-full">
-                  <TextInput
-                    type="url"
-                    value={url}
-                    onChange={(e) =>
-                      onChangeSmartLink(id, { url: e.target.value })
-                    }
-                    label="Link"
-                    placeholder={LONG_LINK_EXAMPLE}
-                    description="Link to be shortened"
-                    className="flex-1"
-                    size="md"
-                    radius="md"
-                    required
-                  />
+              {isEditing &&
+              link!.isProtectedByPassword &&
+              !shouldUpdateMainLinkPassword ? (
+                <Button
+                  variant="default"
+                  size="md"
+                  color="gray"
+                  onClick={() => setShouldUpdateMainLinkPassword(true)}>
+                  Remove current password
+                </Button>
+              ) : (
+                <>
                   <PasswordInput
-                    required
-                    value={password}
-                    onChange={(e) =>
-                      onChangeSmartLink(id, { password: e.target.value })
-                    }
+                    required={isSmartPassword}
+                    value={mainPassword}
+                    onChange={(e) => setMainPassword(e.target.value)}
                     label="Password"
+                    name="mainPassword"
                     placeholder="Password"
                     className="flex-1"
                     description="Password to protect the link"
                     size="md"
                     radius="md"
                   />
-                </div>
-                <Tooltip label="Remove link" color="gray">
-                  <ActionIcon
-                    onClick={() => removePasswordLink(id)}
-                    size="xl"
-                    color="gray"
-                    radius="md"
-                    variant="light">
-                    <Minus size={22} />
-                  </ActionIcon>
-                </Tooltip>
-              </li>
-            ))}
+                  {isEditing &&
+                    link!.isProtectedByPassword &&
+                    shouldUpdateMainLinkPassword && (
+                      <Button
+                        variant="default"
+                        size="md"
+                        color="gray"
+                        onClick={() => setShouldUpdateMainLinkPassword(false)}>
+                        <Undo />
+                      </Button>
+                    )}
+                </>
+              )}
+            </li>
+            {smartLinks.map(
+              ({ id, url, password, shouldUpdatePassword, isNew }) => (
+                <li className="flex items-end gap-2 w-full" key={id}>
+                  <div className="flex items-end gap-2 w-full">
+                    <TextInput
+                      type="url"
+                      value={url}
+                      onChange={(e) =>
+                        onChangeSmartLink(id, { url: e.target.value })
+                      }
+                      label="Link"
+                      placeholder={LONG_LINK_EXAMPLE}
+                      description="Link to be shortened"
+                      className="flex-1"
+                      size="md"
+                      radius="md"
+                      required
+                    />
+                    {isEditing &&
+                    !isNew &&
+                    link!.isProtectedByPassword &&
+                    !shouldUpdatePassword ? (
+                      <Button
+                        variant="default"
+                        size="md"
+                        color="gray"
+                        onClick={() =>
+                          onChangeSmartLink(id, { shouldUpdatePassword: true })
+                        }>
+                        Remove current password
+                      </Button>
+                    ) : (
+                      <>
+                        <PasswordInput
+                          required
+                          value={password}
+                          onChange={(e) =>
+                            onChangeSmartLink(id, { password: e.target.value })
+                          }
+                          label="Password"
+                          placeholder="Password"
+                          className="flex-1"
+                          description="Password to protect the link"
+                          size="md"
+                          radius="md"
+                        />
+                        {isEditing &&
+                          link!.isProtectedByPassword &&
+                          shouldUpdateMainLinkPassword && (
+                            <Button
+                              variant="default"
+                              size="md"
+                              color="gray"
+                              onClick={() =>
+                                onChangeSmartLink(id, {
+                                  shouldUpdatePassword: false
+                                })
+                              }>
+                              <Undo />
+                            </Button>
+                          )}
+                      </>
+                    )}
+                  </div>
+                  <Tooltip label="Remove link" color="gray">
+                    <ActionIcon
+                      onClick={() => removePasswordLink(id)}
+                      size="xl"
+                      color="gray"
+                      radius="md"
+                      variant="light">
+                      <Minus size={22} />
+                    </ActionIcon>
+                  </Tooltip>
+                </li>
+              )
+            )}
           </ul>
           <Tooltip label="Create smart password link" color="gray">
             <ActionIcon
@@ -277,8 +361,9 @@ export const NewLinkModal: React.FC<Props> = ({
             description="Link will be disabled after this number of clicks"
             className="flex-1"
             name="maxClicks"
-            value={maxClicks ?? undefined}
+            value={maxClicks === 0 || maxClicks === null ? '' : maxClicks}
             onChange={(value) => setMaxClicks(+value)}
+            startValue={1}
             min={0}
             size="md"
             radius="md"

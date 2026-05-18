@@ -1,6 +1,7 @@
 export interface SingleLinkDetails {
   url: string;
   password?: string;
+  shouldUpdatePassword?: boolean;
 }
 
 export type User = {
@@ -31,6 +32,11 @@ export interface CreateLinkDetails {
   code?: string;
 }
 
+export interface SmartLinkDetails extends SingleLinkDetails {
+  id: string;
+  isNew?: boolean;
+}
+
 export interface LinkDetails extends Omit<CreateLinkDetails, 'tags'> {
   id: string;
   code: string;
@@ -46,6 +52,7 @@ export interface LinkDetails extends Omit<CreateLinkDetails, 'tags'> {
   maxVisits?: number;
   deleteAt?: Date;
   activeAt?: Date;
+  shouldUpdatePassword?: boolean;
 }
 
 export interface TokenDetails {

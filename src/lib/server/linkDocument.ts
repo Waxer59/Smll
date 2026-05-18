@@ -16,12 +16,12 @@ import {
   LinkRow
 } from '@/types';
 import { nanoid } from 'nanoid';
-import { Query, ID } from 'appwrite';
 import { createAdminClient } from './appwrite';
 import { getLoggedInUser } from './appwrite-functions/auth';
 import bcrypt from 'bcrypt';
 import { encrypt, decrypt } from './encryption';
 import { isLinkCorrect } from '@/helpers/isLinkCorrect';
+import { Permission, Role, Query, ID } from 'node-appwrite';
 
 const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
@@ -237,7 +237,12 @@ export async function createShortenedLink(
         code: uniqueCode,
         creatorId: userId,
         links: linksToStore
-      }
+      },
+      [
+        Permission.read(Role.user(userId)),
+        Permission.update(Role.user(userId)),
+        Permission.delete(Role.user(userId))
+      ]
     );
 
     return {
@@ -346,6 +351,8 @@ export async function editLinkById(
 
     userId = user.$id;
   }
+
+  // TODO Improve isLinkCorrect when updating to handle correctly the case when we need to verify that two passwords are not the same when updated.
   const { success, errors } = isLinkCorrect(link);
 
   if (!success) {
@@ -390,13 +397,17 @@ export async function editLinkById(
       link?.links?.map((l, idx) => ({
         $id: linkDocument.links[idx]?.$id ?? undefined,
         url: encrypt(l.url),
-        password: l.password ? bcrypt.hashSync(l.password, SALT_ROUNDS) : null
+        password:
+          l.shouldUpdatePassword && l.password
+            ? bcrypt.hashSync(l.password, SALT_ROUNDS)
+            : // If the password should be updated but is empty, set it to null to remove the password
+              // If the password should not be updated, keep it as is
+              l.shouldUpdatePassword && l.password === ''
+              ? null
+              : undefined
       })) ??
-      linkDocument.links.map((l: any) => ({
-        $id: l.$id,
-        url: encrypt(l.url),
-        password: l.password ?? null
-      }));
+      // If links are not updated, keep the old ones
+      undefined;
 
     const updatedLink = await database.updateRow(
       APPWRITE_DATABASES.link_shortener,

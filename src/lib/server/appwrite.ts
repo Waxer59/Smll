@@ -42,7 +42,7 @@ export async function createSessionClient(token?: string) {
       return new Avatars(client);
     },
     get database() {
-      return new Databases(client);
+      return new TablesDB(client);
     }
   };
 }
@@ -114,8 +114,7 @@ export async function getUserShortenedLinks(
         deleteAt: deleteAt ? new Date(deleteAt) : undefined,
         links: linksDocument?.map((ld: any) => ({
           id: ld.$id,
-          url: decrypt(ld.url),
-          password: ld.password ?? null
+          url: decrypt(ld.url)
         })),
         shortenedLink: `${NEXT_PUBLIC_BASE_URL}/${code}`,
         isProtectedByPassword: Boolean(linksDocument?.[0]?.password),

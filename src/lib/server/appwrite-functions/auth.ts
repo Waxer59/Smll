@@ -2,7 +2,7 @@
 
 import { Cookies, APPWRITE_DATABASES, APPWRITE_COLLECTIONS } from '@/constants';
 import { cookies } from 'next/headers';
-import { Models, Query, ID } from 'appwrite';
+import { Models, Query, ID } from 'node-appwrite';
 import { createSessionClient, createAdminClient } from '../appwrite';
 import { User } from '@/types';
 

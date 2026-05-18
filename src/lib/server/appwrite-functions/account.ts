@@ -1,10 +1,10 @@
 'use server';
 
-import { ID, Models, Query } from 'appwrite';
 import { createAdminClient, createSessionClient } from '../appwrite';
 import jwt from 'jsonwebtoken';
 import { APPWRITE_COLLECTIONS, APPWRITE_DATABASES } from '@/constants';
 import { TokenDetails } from '@/types';
+import { Permission, Role, ID, Models, Query } from 'node-appwrite';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -68,13 +68,13 @@ export async function getUserTokens(): Promise<TokenDetails[] | null> {
   let tokens = null;
 
   try {
-    const resp = await database.listDocuments(
+    const resp = await database.listRows(
       APPWRITE_DATABASES.link_shortener,
       APPWRITE_COLLECTIONS.account_tokens,
       [Query.equal('creatorId', user.$id)]
     );
 
-    tokens = resp.documents.map((token) => ({
+    tokens = resp.rows.map((token) => ({
       id: token.$id,
       token: token.token
     }));
@@ -101,14 +101,19 @@ export async function createAccountToken(): Promise<TokenDetails | null> {
   let tokenEntry = null;
 
   try {
-    tokenEntry = await database.createDocument(
+    tokenEntry = await database.createRow(
       APPWRITE_DATABASES.link_shortener,
       APPWRITE_COLLECTIONS.account_tokens,
       ID.unique(),
       {
         token,
         creatorId: user.$id
-      }
+      },
+      [
+        Permission.read(Role.user(user.$id)),
+        Permission.update(Role.user(user.$id)),
+        Permission.delete(Role.user(user.$id))
+      ]
     );
   } catch (error) {
     console.log(error);
@@ -142,7 +147,7 @@ export async function deleteAccountToken(deleteToken: string) {
   }
 
   try {
-    await database.deleteDocument(
+    await database.deleteRow(
       APPWRITE_DATABASES.link_shortener,
       APPWRITE_COLLECTIONS.account_tokens,
       tokenId

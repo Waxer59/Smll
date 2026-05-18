@@ -43,18 +43,15 @@ export const LinkModals = () => {
               success: (data) => {
                 setEditLinkId(null);
                 if (!data.success) {
-                  toast.error('Failed to save link.');
-                  return;
+                  setEditLinkId(null);
+                  setIsUpdatingLink(false);
+                  return 'Error saving link.';
                 }
-
                 setIsUpdatingLink(false);
                 editLinkByIdStore(targetEditLink.id, {
                   ...targetEditLink,
-                  ...link,
-                  shortenedLink: NEXT_PUBLIC_BASE_URL + '/' + link.code,
-                  originalLink: link.links[0].url,
-                  isSmartLink: Boolean(link.links.length > 1),
-                  isProtectedByPassword: Boolean(link.links[0].password)
+                  ...data.link,
+                  shortenedLink: NEXT_PUBLIC_BASE_URL + '/' + link.code
                 });
                 return 'Link saved successfully.';
               },

@@ -23,6 +23,12 @@ export const CreateLink = () => {
 
       if (success) {
         toast.success('Link created successfully.');
+
+        // Remove password from the link details before adding it to the store
+        data!.links = data!.links.map(({ password, ...link }) => ({
+          ...link
+        }));
+
         addLink(data!);
         setIsModalOpen(false);
       } else {
