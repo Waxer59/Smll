@@ -352,14 +352,37 @@ export async function editLinkById(
     userId = user.$id;
   }
 
-  // TODO Improve isLinkCorrect when updating to handle correctly the case when we need to verify that two passwords are not the same when updated.
-  const { success, errors } = isLinkCorrect(link);
+  const { database } = await createAdminClient();
+
+  const storedPasswords = await database.getRow({
+    databaseId: APPWRITE_DATABASES.link_shortener,
+    tableId: APPWRITE_COLLECTIONS.shortened_links,
+    rowId: linkId,
+    queries: [Query.select(['links.password'])]
+  });
+
+  const areAllPasswordsUnique = storedPasswords.links.every(
+    ({ password: encryptedPassword }: { password: string }) =>
+      link.links?.every(({ password }) => {
+        if (!password || !encryptedPassword) {
+          return true;
+        }
+        return bcrypt.compareSync(password, encryptedPassword);
+      })
+  );
+
+  if (!areAllPasswordsUnique) {
+    return {
+      success: false,
+      errors: ['All passwords must be unique.']
+    };
+  }
+
+  const { success, errors } = isLinkCorrect(link, true);
 
   if (!success) {
     return { success, errors };
   }
-
-  const { database } = await createAdminClient();
 
   // Check if the link belongs to the user
   const linkDocument = await getShortenedLinkById(linkId, userId);

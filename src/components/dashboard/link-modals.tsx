@@ -42,12 +42,15 @@ export const LinkModals = () => {
               loading: 'Saving link...',
               success: (data) => {
                 setEditLinkId(null);
+
                 if (!data.success) {
                   setEditLinkId(null);
                   setIsUpdatingLink(false);
-                  return 'Error saving link.';
+                  throw new Error(data.errors[0]);
                 }
+
                 setIsUpdatingLink(false);
+
                 editLinkByIdStore(targetEditLink.id, {
                   ...targetEditLink,
                   ...data.link,
@@ -55,10 +58,10 @@ export const LinkModals = () => {
                 });
                 return 'Link saved successfully.';
               },
-              error: () => {
+              error: (e) => {
                 setEditLinkId(null);
                 setIsUpdatingLink(false);
-                return 'Error saving link.';
+                return e.message ?? 'Error saving the link';
               }
             });
           }}

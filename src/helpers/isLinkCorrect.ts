@@ -5,7 +5,8 @@ import { isDateBefore } from './isDateBefore';
 import { isFutureDate } from './isFutureDate';
 
 export function isLinkCorrect(
-  link: CreateLinkDetails | UpdateLinkDetails
+  link: CreateLinkDetails | UpdateLinkDetails,
+  isUpdate?: boolean
 ): OperationResult {
   const errors: string[] = [];
 
@@ -67,7 +68,7 @@ export function isLinkCorrect(
     );
   }
 
-  if (link.links) {
+  if (link.links && !isUpdate) {
     const areAllPasswordsUnique = areAllLinksPasswordsUnique(link.links);
 
     if (!areAllPasswordsUnique) {

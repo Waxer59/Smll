@@ -144,17 +144,15 @@ export const NewLinkModal: React.FC<Props> = ({
       }))
     ];
 
-    // TODO check for unique passwords
-    if (isEditing) {
-      //...
-    } else {
-      const arellLinksPasswordsUnique =
-        new Set(links.map((l) => l.password)).size === links.length;
+    const arellLinksPasswordsUnique = links.every((link, index) =>
+      links
+        .slice(0, index)
+        .every((l) => l.password !== link.password || l.password === '')
+    );
 
-      if (!arellLinksPasswordsUnique) {
-        toast.error('All links passwords must be unique.');
-        return;
-      }
+    if (!arellLinksPasswordsUnique) {
+      toast.error('All links passwords must be unique.');
+      return;
     }
 
     const { success, data, error } = formSchema.safeParse({
@@ -177,10 +175,10 @@ export const NewLinkModal: React.FC<Props> = ({
       return;
     }
 
+    onSubmit(data);
+
     // Remove smart links passwords
     setSmartLinks(smartLinks.map((link) => ({ ...link, password: '' })));
-
-    onSubmit(data);
   };
 
   const removePasswordLink = (id: string) => {
